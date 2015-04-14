@@ -63,6 +63,91 @@ rm(list=ls())
 load("f2fall.r")
 load("f2f.r")
 
+#face-to-face datasets
+#focus on 2009-2011 (with financial attitude questions related to the recession)
+
+#attitude variables + tenure group
+att <- c('tenure_grp3',
+         'huresp',
+         'xphsdf',
+         'xphpdf',
+         'billscc',
+         'hscntcr1',
+         'hscntcr2',
+         'hscntcr',
+         'hscrchg',
+         'saving',
+         'spend',
+         'debtconc',
+         'chdebtconc',
+         'uncert',
+         'uncertch',
+         'fisc_conc',
+         'forebeareffsec',
+         'forebeareffunsec')
+
+#expression for enumerated binary variables
+enum <- 'xphdr|xphdd|savebcs|desave11bcs|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_conc|forebearsec|forebearunsec'
+
+#2009-2011
+for (i in 2009:2011){
+  temp <- data.frame(eval(parse(text=paste0('f',i))))
+  a <- names(temp)
+  b <- a[grepl(enum,a)==T]
+  assign(paste0('n',i), temp[,names(temp) %in% c(att,b)])
+  h1 <- sprintf('No. of attitude variables in %d: %d',i,ncol(eval(parse(text=paste0('n',i)))))
+  print(h1)
+}
+
+#check that all years have the same variables 
+sum((names(n2009)==names(n2010))==F)
+sum((names(n2009)==names(n2011))==F)
+sum((names(n2010)==names(n2011))==F)
+
+#Discard NA variables for each year
+
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('n',i)))
+  keep <- c()
+  for(name in names(temp)){
+    if(sum(is.na(temp[,name]))!=nrow(temp))
+    keep <- c(keep,name)
+  }
+  temp <- temp[,keep]
+  assign(paste0('m',i),temp)
+  h1 <- sprintf('No. of non-NA variables in %d: %d', i,length(names(temp)))
+  print(h1)
+}
+
+#Check proportion. of uninformative responses per variable (don't know/refused)
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('m',i)))
+  set <- c()
+  for(name in names(temp)){
+    uninf <- round(sum(temp[,name] %in% c("don't know","refused"))/nrow(temp)*100,2)
+    set <- c(set,uninf)
+    h1 <- sprintf("Year %d, %s: %.2f%% don't know/refused",i,name,uninf)
+    print(h1)
+  }
+  h2 <- sprintf("Median percentage don't know/refused: %.2f%%", median(set))
+  print(h2)
+}
+
+
+#Check proportion of blank responses per variable
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('m',i)))
+  set <- c()
+  for(name in names(temp)){
+    uninf <- round(sum(temp[,name]=="")/nrow(temp)*100,2)
+    set <- c(set,uninf)
+    h1 <- sprintf("Year %d, %s: %.2f%% blank",i,name,uninf)
+    print(h1)
+  }
+  h2 <- sprintf("Median percentage blank: %.2f%%", median(set))
+  print(h2)
+}
+
 #online datasets
 #pure balance sheet variables
 pbs <- c('fihhyr2','dfihhyr','saveamount','nvesttot','hsval','mg1tot','ustot')
