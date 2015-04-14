@@ -63,7 +63,10 @@ rm(list=ls())
 load("f2fall.r")
 load("f2f.r")
 
-#face-to-face datasets
+######################
+#FACE-TO-FACE DATASETS
+######################
+
 #focus on 2009-2011 (with financial attitude questions related to the recession)
 
 #attitude variables + tenure group
@@ -87,7 +90,7 @@ att <- c('tenure_grp3',
          'forebeareffunsec')
 
 #expression for enumerated binary variables
-enum <- 'xphdr|xphdd|savebcs|desave11bcs|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_conc|forebearsec|forebearunsec'
+enum <- 'xphdr|xphdd|savebcs|desave11bcs|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_conc|fisc_likeact|forebearsec|forebearunsec'
 
 #2009-2011
 for (i in 2009:2011){
@@ -133,7 +136,6 @@ for (i in 2009:2011){
   print(h2)
 }
 
-
 #Check proportion of blank responses per variable
 for (i in 2009:2011){
   temp <- eval(parse(text=paste0('m',i)))
@@ -148,7 +150,99 @@ for (i in 2009:2011){
   print(h2)
 }
 
-#online datasets
+#process variables
+#make copies of datasets
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('m',i)))
+  assign(paste0('p',i),temp)
+}
+
+#convert 'not applicable' to 'no' in xphdr_,xphdd_
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('p',i)))
+  a <- names(temp)[grepl('xphdr|xphdd',names(temp))==T]
+  for (name in a){
+    na <- round(sum(temp[,name]=='not applicable')/nrow(temp)*100,2)
+    h1 <- sprintf('Year %d, percentage not applicable in %s: %.2f%%',i,name,na)
+    print(h1)
+    temp[,name] <- sapply(temp[,name],function(x){if(x=='not applicable') y <- 'no' else y <- x})
+    no <- round(sum(temp[,name]=='no')/nrow(temp)*100,2)
+    h2 <- sprintf('Year %d, percentage no in %s: %.2f%%',i,name,no)
+    print(h2)
+  }
+  #remove xphdd12-14 (mostly blanks)
+  temp <- temp[,!(names(temp) %in% c('xphdd12','xphdd13','xphdd14'))]
+  assign(paste0('p',i),temp)
+}
+
+#remove 'not applicable' observations in hscntcr
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('p',i)))
+  temp <- temp[temp$hscntcr!='not applicable',]
+  assign(paste0('p',i),temp)
+  h1 <- sprintf('Year %d, no. of obs left after removing not applicable in hscntcr: %d',i,nrow(temp))
+  print(h1)
+}
+
+#convert 'not applicable' in hscrchg into a new category:'non-borrower'
+for (i in 2009:2011){
+  temp <- eval(parse(text=paste0('p',i)))
+  temp$hscrchg <- sapply(temp$hscrchg, function(x){if(x=='not applicable') y <- 'non-borrower' else y <- x})
+  assign(paste0('p',i),temp)
+  nb <- round(sum(temp$hscrchg=='non-borrower')/nrow(temp)*100,2)
+  h1 <- sprintf('Year %d, percentage non-borrowers in hscrchg: %.2f%%',i,nb)
+  print(h1)
+}
+
+#remove p2010 blank observations in debtconc, debtconc_act, chdebtconc
+temp <- p2010
+debt <- names(temp)[grepl('debtconc|debtconc_act|chdebtconc',names(temp))==T]
+for (name in debt){
+  temp <- temp[temp[,name]!='',]
+}
+sprintf('Year 2010, no. of obs left after removing blanks in debtconc: %d', nrow(temp))
+assign('p2010',temp)
+
+#convert p2011 blank responses in fisc11_act to 'no'
+temp <- p2011
+fisc <- names(temp)[grepl('fisc11_act',names(temp))==T]
+for(name in fisc){
+  na <- round(sum(temp[,name]=='')/nrow(temp)*100,2)
+  h1 <- sprintf('Year %d, percentage blank in %s: %.2f%%',i,name,na)
+  print(h1)
+  temp[,name] <- sapply(temp[,name], function(x){if(x=='') y <- 'no' else y <- x})
+  nb <- round(sum(temp[,name]=='no')/nrow(temp)*100,2)
+  h2 <- sprintf('Year %d, percentage no in %s: %.2f%%',i,name,nb)
+  print(h2)
+}
+assign('p2011',temp)
+
+#remove p2011 blank observations in forebearunsec_
+temp <- p2011
+runsec <- names(temp)[grepl('forebearunsec',names(temp))==T]
+for (name in runsec){
+  temp <- temp[temp[,name]!='',]
+  h1 <- sprintf('Year 2011, no. of obs left after removing blanks in %s: %d',name,nrow(temp))
+  print(h1)
+}
+assign('p2011',temp)
+
+#final set of variables
+attf <- c('xphsdf',
+          'billscc',
+          'hscntcr1',
+          'hscntcr2',
+          'hscntcr',
+          'hscrchg',
+          'saving',
+          'saving11')
+
+
+
+#################
+#ONLINE DATASETS
+#################
+
 #pure balance sheet variables
 pbs <- c('fihhyr2','dfihhyr','saveamount','nvesttot','hsval','mg1tot','ustot')
 unsec <- c('us','usa','usb','usc','usd','use','usg','ush','usi','usj')
