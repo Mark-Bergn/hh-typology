@@ -59,7 +59,7 @@ f2f  <- filter(f2f, year >= 2007)
 save(f2f, file ="f2f.r")
 
 #Save on memory
-rm(list=ls())
+#rm(list=ls())
 load("f2fall.r")
 load("f2f.r")
 
