@@ -261,6 +261,9 @@ for (i in 2009:2011){
   temp <- data.frame(eval(parse(text=paste0('q',i))))
   flag <- apply(temp,1,function(x){if(sum(x=="don't know" | x=="refused")>0) y <- 1 else y <- 0})
   temp <- temp[flag==0,]
+  for (name in names(temp)){
+    temp[,name] <- as.factor(temp[,name])
+  }
   assign(paste0('q',i), temp)
   h1 <- sprintf("Year %d, no. of obs left after removing any don't know/refused: %d",i,nrow(temp))
   print(h1)
