@@ -184,13 +184,12 @@ for (i in 2009:2011){
   print(h1)
 }
 
-#convert 'not applicable' in hscrchg into a new category:'non-borrower'
+#remove 'not applicable' observations in hscrchg
 for (i in 2009:2011){
   temp <- eval(parse(text=paste0('p',i)))
-  temp$hscrchg <- sapply(temp$hscrchg, function(x){if(x=='not applicable') y <- 'non-borrower' else y <- x})
+  temp <- temp[temp$hscrchg!='not applicable',]
   assign(paste0('p',i),temp)
-  nb <- round(sum(temp$hscrchg=='non-borrower')/nrow(temp)*100,2)
-  h1 <- sprintf('Year %d, percentage non-borrowers in hscrchg: %.2f%%',i,nb)
+  h1 <- sprintf('Year %d, no. of obs left after removing not applicable in hscrchg: %d',i,nrow(temp))
   print(h1)
 }
 
@@ -217,13 +216,17 @@ for(name in fisc){
 }
 assign('p2011',temp)
 
-#remove p2011 blank observations in forebearunsec_
+#convert p2011 blank observations in forebearunsec_ to no
 temp <- p2011
 runsec <- names(temp)[grepl('forebearunsec',names(temp))==T]
 for (name in runsec){
-  temp <- temp[temp[,name]!='',]
-  h1 <- sprintf('Year 2011, no. of obs left after removing blanks in %s: %d',name,nrow(temp))
+  na <- round(sum(temp[,name]=='')/nrow(temp)*100,2)
+  h1 <- sprintf('Year 2011, percentage blank in %s: %.2f%%',name,na)
   print(h1)
+  temp[,name] <- sapply(temp[,name],function(x){if(x=='') y <- 'no' else y <- x})
+  nb <- round(sum(temp[,name]=='no')/nrow(temp)*100,2)
+  h2 <- sprintf('Year 2011, percentage no in %s: %.2f%%',name,nb)
+  print(h2)
 }
 assign('p2011',temp)
 
@@ -235,10 +238,35 @@ attf <- c('xphsdf',
           'hscntcr',
           'hscrchg',
           'saving',
-          'saving11')
+          'saving11',
+          'debtconc',
+          'chdebtconc',
+          'uncert',
+          'uncertch')
 
+enumf <- 'xphdr|xphdd|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_impact'
 
+for (i in 2009:2011){
+  temp <- data.frame(eval(parse(text=paste0('p',i))))
+  a <- names(temp)
+  b <- a[grepl(enumf,a)==T]
+  assign(paste0('q',i), temp[,names(temp) %in% c(attf,b)])
+  h1 <- sprintf('No. of final attitude variables in %d: %d',i,ncol(eval(parse(text=paste0('q',i)))))
+  print(h1)
+}
 
+#remove observations if any don't know/refused
+
+for (i in 2009:2011){
+  temp <- data.frame(eval(parse(text=paste0('q',i))))
+  flag <- apply(temp,1,function(x){if(sum(x=="don't know" | x=="refused")>0) y <- 1 else y <- 0})
+  temp <- temp[flag==0,]
+  assign(paste0('q',i), temp)
+  h1 <- sprintf("Year %d, no. of obs left after removing any don't know/refused: %d",i,nrow(temp))
+  print(h1)
+}
+
+  
 #################
 #ONLINE DATASETS
 #################
