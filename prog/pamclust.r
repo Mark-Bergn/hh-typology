@@ -12,7 +12,7 @@ fit1  <- pam(d, 5)
 x <- fit$points[,1]
 y <- fit$points[,2]
 plot(x, y, xlab="Coordinate 1", ylab="Coordinate 2", 
-     main="Metric  MDS", col = fit2$clustering)
+     main="Metric  MDS", col = fit1$clustering)
 
 
 
