@@ -59,7 +59,7 @@ f2f  <- filter(f2f, year >= 2007)
 save(f2f, file ="f2f.r")
 
 #Save on memory
-#rm(list=ls())
+rm(list=ls())
 load("f2fall.r")
 load("f2f.r")
 
@@ -194,13 +194,13 @@ for (i in 2009:2011){
 }
 
 #remove p2010 blank observations in debtconc, debtconc_act, chdebtconc
-temp <- p2010
-debt <- names(temp)[grepl('debtconc|debtconc_act|chdebtconc',names(temp))==T]
-for (name in debt){
-  temp <- temp[temp[,name]!='',]
-}
-sprintf('Year 2010, no. of obs left after removing blanks in debtconc: %d', nrow(temp))
-assign('p2010',temp)
+#temp <- p2010
+#debt <- names(temp)[grepl('debtconc|debtconc_act|chdebtconc',names(temp))==T]
+#for (name in debt){
+ # temp <- temp[temp[,name]!='',]
+#}
+#sprintf('Year 2010, no. of obs left after removing blanks in debtconc: %d', nrow(temp))
+#assign('p2010',temp)
 
 #convert p2011 blank responses in fisc11_act to 'no'
 temp <- p2011
@@ -239,12 +239,13 @@ attf <- c('xphsdf',
           'hscrchg',
           'saving',
           'saving11',
-          'debtconc',
-          'chdebtconc',
+          #'debtconc',
+          #'chdebtconc',
           'uncert',
           'uncertch')
 
-enumf <- 'xphdr|xphdd|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_impact'
+#enumf <- 'xphdr|xphdd|debtconc_act|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_impact'
+enumf <- 'xphdr|xphdd|fisc_conc|fisc_act|fisc_impact|fisc11_act|fisc11_impact'
 
 for (i in 2009:2011){
   temp <- data.frame(eval(parse(text=paste0('p',i))))
