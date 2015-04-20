@@ -68,10 +68,12 @@ gadmsw  <- makeUniform(gadmsw)
 #Now bind
 boe  <- spRbind(regwgs84, gadmsw)
 
+levels(boe$NAME)
+
 #Make the NAME match with our BOE data, this is what will wil merge on
-levels(boe$NAME)  <- c("E Anglia",  "E Midlands",	"Greater London", 
-                       "North",	"North West", "Scotland",	"South East",
-                       "South West",	"W Midlands",	"Wales",	"Yorks&Humber")
+levels(boe$NAME)  <- c("E Midlands", "E Anglia", "Greater London", 
+                       "North",	"North West", "South East",
+                       "South West",	"W Midlands",	"Yorks&Humber", "Scotland",  "Wales")
 
 #plot(boe)
 
