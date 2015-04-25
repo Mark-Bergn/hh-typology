@@ -24,9 +24,9 @@ shinyUI(bootstrapPage(
                      #h5("Select the number of household typologies"),
                      #actionButton("clusttwo", label=h2("2")),
                      #actionButton("clustfour", label=h2("4")),
-                     style = "height: 250px;"
                      radioButtons("clustnum", label=h5("Select the number of household typologies"),
-                                  choices=c("Two","Four"), selected="Two")   
+                                  choices=c("Two","Four"), selected="Two"),
+                     style = "height: 250px;"
            )
            ),
     
