@@ -103,7 +103,7 @@ shinyUI(bootstrapPage(
                                             tabPanel("Highly Secure", value=1),
                                             tabPanel("Secure but worried", value=2),
                                             tabPanel("Struggling to keep up", value=3),
-                                            tabPanel("Falling behind"`, value=4),
+                                            tabPanel("Falling behind", value=4),
                                             widths=c(12,12),
                                             id='hh11_four'
                                           ),
