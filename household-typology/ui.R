@@ -164,7 +164,7 @@ shinyUI(fluidPage(
                  plotOutput("mdsplot", height=800), textOutput("clust")
                  ),
           column(5,
-                 plotOutput("attplot", height=300), tableOutput("summary") #textOutput("finance"),
+                 plotOutput("attplot", height=260, width='90%'), tableOutput("summary") #textOutput("finance"),
           )
           ),
         value=1

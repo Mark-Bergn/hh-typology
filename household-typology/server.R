@@ -59,7 +59,73 @@ allcolours<- list(c('#88419D','#FEB24C'),
                   c('#FED976','#969696'),
                   c('#FD8D3C','#969696')
                   )
-               
+
+#reverse label and colour order when using coord_flip() 
+revlabels<- list(c('Insecure','Secure'),
+                  c('Insecure','Secure'),
+                  c('Secure','Insecure'),
+                  c('Cluster 4','Cluster 3','Cluster 2','Cluster 1'),
+                  c('Survey population','Cluster 1'),
+                  c('Survey population','Cluster 2'),
+                  c('Survey population','Cluster 3'),
+                  c('Survey population','Cluster 4'),
+                  c('Insecure','Secure'),
+                  c('Secure','Insecure'),
+                  c('Secure','Insecure'),
+                  c('Insecure 2','Insecure 1','Secure 2','Secure 1'),
+                  c('Insecure','Secure'),
+                  c('Insecure','Secure'),
+                  c('Secure','Insecure'),
+                  c('Falling behind','Struggling to keep up','Secure but worried','Highly Secure'),
+                  c('Survey population','Highly Secure'),
+                  c('Survey population','Secure but worried'),
+                  c('Survey population','Struggling to keep up'),
+                  c('Survey population','Falling behind')
+)
+
+revcolours<- list(c('#FEB24C','#88419D'),
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  c('#FD8D3C','#FED976','#8C6BB1','#810F7C'),
+                  c('#969696','#810F7C'),
+                  c('#969696','#8C6BB1'),
+                  c('#969696','#FED976'),
+                  c('#969696','#FD8D3C'),
+                  c('#FEB24C','#88419D'),
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  c('#FD8D3C','#FED976','#8C6BB1','#810F7C'),
+                  c('#FEB24C','#88419D'),
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  c('#FD8D3C','#FED976','#8C6BB1','#810F7C'),
+                  c('#969696','#810F7C'),
+                  c('#969696','#8C6BB1'),
+                  c('#969696','#FED976'),
+                  c('#969696','#FD8D3C')
+)
+
+histcolours<- list('#969696',
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  '#969696',
+                  c('#969696','#810F7C'),
+                  c('#969696','#8C6BB1'),
+                  c('#969696','#FED976'),
+                  c('#969696','#FD8D3C'),
+                  '#969696',
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  '#969696',
+                  '#969696',
+                  c('#969696','#88419D'),
+                  c('#969696','#FEB24C'),
+                  '#969696',
+                  c('#969696','#810F7C'),
+                  c('#969696','#8C6BB1'),
+                  c('#969696','#FED976'),
+                  c('#969696','#FD8D3C')
+)
 
 #store all possible clusters in a vector
 allclust <- c("hh09_two","hh09_four","hh10_two","hh10_four","hh11_two","hh11_four")
@@ -133,10 +199,49 @@ shinyServer(function(input, output) {
     x <- allcolours[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
   })
   
+  revlabelSub <- reactive({
+    x <- revlabels[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
+  })
+  
+  revcolourSub <- reactive({
+    x <- revcolours[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
+  })
+  
+  histcolourSub <- reactive({
+    x <- histcolours[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
+  })
+  
+  #Histogram of income/debt
+  #hack to compare histogram of cluster to entire population
+  histomaker <- function(cluster,newdataSub,finance){
+    histdata <- newdataSub
+    histdata$histclust <- 0 #make the whole survey population one 'cluster'
+    if(cluster==0){
+      histdata[,finance] <- log(as.numeric(as.character(histdata[,finance])))
+      x <- histdata
+    }  
+    else{
+      clustdata <- newdataSub[newdataSub$clust==cluster,]
+      clustdata$histclust <- cluster
+      histdata <- rbind(histdata, clustdata) #duplicate cluster observations
+      histdata[,finance] <- log(as.numeric(as.character(histdata[,finance])))
+      x <- histdata
+    }
+    return(x)
+  }
+  
+  histodata <- reactive({
+    x <- histomaker(cluster(),newdataSub(),input$finance)
+  })
+  
   #Turn financial variable numeric
   numFin <- reactive({
     x <- as.numeric(as.character(newdataSub()[,input$finance]))
   })
+  
+  #histnumFin <- reactive({
+   # x <- as.numeric(as.character(histodata()[,input$finance]))
+  #})
   
   #Financial label
   financelabeller <- function(finance){
@@ -148,14 +253,34 @@ shinyServer(function(input, output) {
       y <- 'Total unsecured debt in GBP'
     return(y)
   }
+  
   labelFin <- reactive({
     x <- financelabeller(input$finance)
   })
   
+  #Financial label for histogram
+  histfinancelabeller <- function(finance){
+    if (finance=='fihhyr_a')
+      y <- 'Income score'
+    else if(finance=='dfihhyr_a')
+      y <- 'Disposable income score'
+    else
+      y <- 'Unsecured debt score'
+    return(y)
+  }
+  
+  histlabelFin <- reactive({
+    x <- histfinancelabeller(input$finance)
+  })
+  
+  
+  
+  ##############
   #Plot clusters
+  ##############
   
   #Test whether variables are as expected
-  output$clust <- renderText(y <- cluster())
+  output$clust <- renderText(y <- histcolourSub())
   #output$total <- renderText(y <- )
   #output$finance <- renderText(y <- labelFin())
   
@@ -172,7 +297,19 @@ shinyServer(function(input, output) {
     hh3 <- hh2 + scale_colour_manual('name'='Household type',values=colourSub()) + scale_size_continuous(name=labelFin(),range = c(5,25))
     hh4 <- hh3 + xlab('Dimension 1') + ylab('Dimension 2')
     print(hh4)
+    
+    #histogram density plot
+    #make it an inset
+    vp <- viewport(width=0.4,height=0.2,x=0.05,y=0.05,just=c(0,0))
+    jj <- ggplot(data=histodata(), environment = environment())
+    jj1 <- jj + geom_density(aes(x=histodata()[,input$finance], fill=factor(histodata()$histclust)),
+                             colour='white',alpha=0.6)
+    source('theme_histogram.R')
+    jj2 <- jj1 + scale_fill_manual(values=histcolourSub()) + theme_histogram() + scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
+    jj3 <- jj2 + ggtitle('Relative frequency of households') + xlab(histlabelFin())
+    print(jj3, vp=vp)
   })
+  
   
   #Attitude questions
   #Split responses fourways or twoways only if 'All Types' is selected. Else compare to total survey population
@@ -185,12 +322,15 @@ shinyServer(function(input, output) {
       for (i in unique(summary$newclust)){
         summary$percentage[summary$newclust==i] <- round(summary$freq[summary$newclust==i]/sum(summary$freq[summary$newclust==i])*100,0)
       }
-      if(cluster==0)
+      if(cluster==0){
+        summary$newclust<-sapply(summary$newclust, function(y) {if(y==1) z<-8 else if(y==2) z<-7 else if(y==3) z<-6 else z<-5})
         x <- summary
+      }
+        
       else{
         summarytot <- data.frame(newdata[,list('freq'=.N),by=list(newname)])
         summarytot$percentage <- round(summarytot$freq/sum(summarytot$freq)*100,0)
-        #label total as cluster - 10 to put if after cluster name
+        #label total as cluster - 10 to put it after cluster name
         total <- cluster - 10
         summarytot2 <- cbind('newname'=summarytot$newname,
                              data.frame('newclust'=rep(total,nrow(summarytot))),
@@ -211,15 +351,16 @@ shinyServer(function(input, output) {
   output$summary <- renderTable({ y <- xphsdf()})
   #Plot attitude questions
   output$attplot <- renderPlot({
-    jj1 <- ggplot(data=xphsdf(), environment=environment())
-    jj2 <- jj1 + geom_bar(aes(x=xphsdf()$newname,y=xphsdf()$percentage,fill=factor(xphsdf()$newclust, labels=labelSub())),
-                          stat='identity',position='dodge') + coord_flip()
-    jj3 <- jj2 + geom_text(aes(x=xphsdf()$newname,y=xphsdf()$percentage,label=xphsdf()$percentage,group=factor(xphsdf()$newclust)),
+    pp1 <- ggplot(data=xphsdf(), environment=environment())
+    pp2 <- pp1 + geom_bar(aes(x=xphsdf()$newname,y=xphsdf()$percentage,fill=factor(xphsdf()$newclust, labels=revlabelSub())),
+                          stat='identity',position='dodge', alpha=0.6) + coord_flip()
+    pp3 <- pp2 + geom_text(aes(x=xphsdf()$newname,y=xphsdf()$percentage,label=paste0(xphsdf()$percentage,'%'),group=factor(xphsdf()$newclust)),
                            position=position_dodge(width=1),hjust=0)
     source('theme_attitude.R')
-    jj4 <- jj3 + scale_fill_manual(values=colourSub()) + theme_attitude()
-    jj5 <- jj4 + xlab(name)
-    print(jj5)
+    pp4 <- pp3 + scale_fill_manual(name='Household type',values=revcolourSub()) + theme_attitude()
+    pp5 <- pp4 + scale_y_continuous(limits=c(0,105)) + guides(fill = guide_legend(nrow = 1))
+    pp6 <- pp5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulties paying for accomodation in the past year')
+    print(pp6)
   })
   
 })
