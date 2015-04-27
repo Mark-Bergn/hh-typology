@@ -11,6 +11,10 @@ s2011 <- read.csv('s2011.csv')
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
 
+clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
+clusternew <- factor(as.character(clusternew))
+s2009$clust4 <- clusternew
+
 #Read dictionary to get correct labels and colors for clusters
 dict <- read.csv('clusterdict.csv')
 dict$id <- c(1:nrow(dict))
@@ -19,11 +23,11 @@ dict$id <- c(1:nrow(dict))
 all_labels<- list(c('Secure','Insecure'),
                c('Secure','Insecure'),
                c('Insecure','Secure'),
-               c('Cluster 1','Cluster 2','Cluster 3','Cluster 4'),
-               c('Cluster 1','Survey population'),
-               c('Cluster 2','Survey population'),
-               c('Cluster 3','Survey population'),
-               c('Cluster 4','Survey population'),
+               c('Highly Secure','Secure but worried','Struggling to keep up','Falling behind'),
+               c('Highly Secure','Survey population'),
+               c('Secure but worried','Survey population'),
+               c('Struggling to keep up','Survey population'),
+               c('Falling behind','Survey population'),
                c('Secure','Insecure'),
                c('Secure','Insecure'),
                c('Insecure','Secure'),
@@ -64,11 +68,11 @@ allcolours<- list(c('#88419D','#FEB24C'),
 revlabels<- list(c('Insecure','Secure'),
                   c('Insecure','Secure'),
                   c('Secure','Insecure'),
-                  c('Cluster 4','Cluster 3','Cluster 2','Cluster 1'),
-                  c('Survey population','Cluster 1'),
-                  c('Survey population','Cluster 2'),
-                  c('Survey population','Cluster 3'),
-                  c('Survey population','Cluster 4'),
+                  c('Falling behind','Struggling to keep up','Secure but worried','Highly Secure'),
+                  c('Survey population','Highly Secure'),
+                  c('Survey population','Secure but worried'),
+                  c('Survey population','Struggling to keep up'),
+                  c('Survey population','Falling behind'),
                   c('Insecure','Secure'),
                   c('Secure','Insecure'),
                   c('Secure','Insecure'),
@@ -131,6 +135,9 @@ histcolours<- list('#969696',
 allclust <- c("hh09_two","hh09_four","hh10_two","hh10_four","hh11_two","hh11_four")
 #store all desired variables for plotting in a vector
 allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a","xphsdf","billscc","uncert","fisc_impact5","saving11","saving","hscntcr1")
+#add in demographic vars
+allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual")
+
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
@@ -364,5 +371,8 @@ shinyServer(function(input, output) {
   })
   
 })
+
+
+
   
 
