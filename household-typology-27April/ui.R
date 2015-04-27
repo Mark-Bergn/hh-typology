@@ -51,10 +51,10 @@ shinyUI(fluidPage(
                             absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             tabPanel("All types", value=0, icon = icon("users")),
-                                            tabPanel("Cluster 1", value=1, icon = icon("user")),
-                                            tabPanel("Cluster 2", value=2, icon = icon("user")),
-                                            tabPanel("Cluster 3", value=3, icon = icon("user")),
-                                            tabPanel("Cluster 4", value=4, icon = icon("user")),
+                                            tabPanel("Highly Secure", value=1, icon = icon("user")),
+                                            tabPanel("Secure but worried", value=2, icon = icon("user")),
+                                            tabPanel("Struggling to keep up", value=3, icon = icon("user")),
+                                            tabPanel("Falling behind", value=4, icon = icon("user")),
                                             widths=c(12,12),
                                             id='hh09_four'
                                             #id='hhclust'
@@ -141,10 +141,11 @@ shinyUI(fluidPage(
            conditionalPanel(condition="input.mainpanelState==2",
                             absolutePanel(height='250px', width='400px',
                                           navlistPanel(
-                                            tabPanel("Family", value=1),
-                                            tabPanel("Location", value=2),
-                                            tabPanel("Blah", value=3),
-                                            tabPanel("Blahblah", value=4),
+                                            tabPanel("Location", value=1),
+                                            tabPanel("Age & Gender", value=2),
+                                            tabPanel("Family", value=3),
+                                            tabPanel("Qualifications", value=4),
+                                            tabPanel("Location", value=5),
                                             widths=c(12,12),
                                             id='demog'
                                             ),
@@ -169,7 +170,17 @@ shinyUI(fluidPage(
           ),
         value=1
         ),
-      tabPanel(tags$h5("Demographics"), helpText('Demographics'), value=2),
+      tabPanel(tags$h5("Demographics"),
+               fluidRow(
+                 column(7,
+                        helpText('Demographics')
+                        ),
+                 column(5,
+                        helpText('Demographics') 
+                        )
+                 ),      
+               value=2
+               ),
       id="mainpanelState"
     )
   )

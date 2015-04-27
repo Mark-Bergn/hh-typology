@@ -4,12 +4,17 @@ library(ggplot2)
 library(RColorBrewer)
 
 #Read data
-s2009 <- read.csv('s2009.csv')
-s2010 <- read.csv('s2010.csv')
-s2011 <- read.csv('s2011.csv')
+s2009 <- read.csv('s09.csv') #fileEncoding='latin1')
+s2010 <- read.csv('s10.csv') #fileEncoding='latin1')
+s2011 <- read.csv('s11.csv') #fileEncoding='latin1')
 
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
+
+#Change order of cluster in clusternew
+clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
+clusternew <- factor(as.character(clusternew))
+s2009$clust4 <- clusternew
 
 #Change labels of billscc and saving to break them into two lines
 for(year in 2009:2011){
@@ -48,6 +53,9 @@ allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a",
             "xphsdf","billscc","xphdd6","xphdr11","xphdr6","uncert",  # 2009
             "xphsdf","billscc","uncert","saving", #2010
             "xphsdf","billscc","uncert","fisc_impact5","saving11","hscntcr1","fisc11_act3") #2011
+
+#add in demographic vars
+allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual")
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
