@@ -50,9 +50,16 @@ plotter <- function(name,data){
 plotter('fisc_impact1',q2011)
 
 #Change order of clusters to make it more intuitive
+
+
+clusternew <- sapply(clust2009$clustering, function(x){if(x==1) y<-'2' else if(x==2) y<-'1' else y <- x})
+clusternew <- factor(as.character(clusternew))
+q2009$clust <- clusternew
+
 clusternew <- sapply(clust2011$clustering, function(x){if(x==3) y<-'2' else if(x==2) y<-'3' else y <- x})
 clusternew <- factor(as.character(clusternew))
 q2011$clust <- clusternew
+
 
 #ggplot for clusters
 library(devtools)
@@ -74,7 +81,11 @@ clusterplot <- function(year){
   print(hh1)
 }
 
+#plots made which were saved to the wiki
+clusterplot('2009')
 clusterplot('2011')
+
+plotter('xphsdf',q2009)
 
 
 

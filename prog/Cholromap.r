@@ -23,13 +23,11 @@ subdat<-SpatialPolygonsDataFrame(subdat, data=subdat_data)
 
 boe  <- subdat
 
-boe$value1  <- as.numeric(boe$NAME)*10
-boe$value2  <- as.numeric(boe$NAME)*4
-boe$value3  <- as.numeric(boe$NAME)*6
-boe$value4  <- as.numeric(boe$NAME)*50
-boe$value5  <- as.numeric(boe$NAME)*60
-
-
+boe$value1  <- 1:length(boe$NAME)
+boe$value2  <- rnorm(1)*25
+boe$value3  <- rnorm(1)*-60
+boe$value4  <- rnorm(1)*55
+boe$value5  <- rnorm(1)*200
 
 #create a dataframe
 boedf  <-  fortify(boe)
@@ -45,7 +43,7 @@ region_centers <- boe %>%
 
 
 #quick way
-spplot(boe, "value")
+spplot(boe, "value1")
 
 
 ##GGplot2
