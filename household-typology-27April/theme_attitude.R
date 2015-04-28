@@ -26,7 +26,7 @@ theme_attitude <- function(base_size = 18, base_family = "Helvetica") {
       legend.text		= element_text(size= rel(0.6)),
       legend.title		= element_text(size= rel(0.8), face="bold"),
       #legend.title		= element_blank(),
-      legend.position	= 'bottom',
+      legend.position	= 'top',
       panel.background  = element_blank(),
       panel.border      = element_blank(),
       plot.background	= element_blank(),	

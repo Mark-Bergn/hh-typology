@@ -2,11 +2,11 @@ theme_mine <- function(base_size = 18, base_family = "Helvetica") {
   # Starts with theme_grey and then modify some parts
   theme_grey(base_size = base_size, base_family = base_family) %+replace%
     theme(
-      axis.line   	= element_line(size=0.5, colour="grey70"),
+      axis.line   	= element_line(size=0.5, colour="grey10"),
       #axis.line 		= element_blank(),
       #axis.line.x		= element_line(size=0.5, colour="black"),
       #axis.line.y		= element_blank(),
-      plot.title		= element_text(size = 18, colour="black", face="bold"),
+      plot.title		= element_text(size = 18, colour="grey10", face="italic", family="Palatino"),
       #strip.text.x 		= element_text(size=18, colour="black", face= "bold"),
       #strip.text.y 		= element_text(size=18, face="bold", angle=90),
       #strip.background 	= element_rect(colour="white", fill="#CCCCCC"),
@@ -14,10 +14,10 @@ theme_mine <- function(base_size = 18, base_family = "Helvetica") {
       axis.text.x		= element_blank(),
       #axis.text.y		= element_text(size = 18, colour="black", vjust=0.5, hjust=1),
       axis.text.y		= element_blank(),
-      axis.title.x		= element_text(size= rel(0.8), colour="grey70", face='italic'),
+      axis.title.x		= element_text(size= rel(0.8), colour="grey10", face='italic'),
       #axis.title.x		= element_blank(),
       #axis.title.y		= element_blank(),
-      axis.title.y		= element_text(size= rel(0.8), colour="grey70", angle=90, face='italic'),
+      axis.title.y		= element_text(size= rel(0.8), colour="grey10", angle=90, face='italic'),
       axis.ticks       = element_blank(),
       #axis.ticks		= element_line(colour='black'),
       legend.key        = element_blank(),

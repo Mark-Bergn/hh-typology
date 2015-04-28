@@ -10,21 +10,32 @@ widget_style <-
   border-radius: 4px;
   border-color: #CCC;"
 
+source('labels.R')
 
 shinyUI(fluidPage(
   
   # Application title
-  headerPanel("Typology of financial attitudes: the Bank of England household survey"),
+  headerPanel(fluidRow(
+    column(1,
+           tags$h1(
+             tags$img(src="Bank_of_England.svg", width="90px")
+           )
+           ),
+    column(11,
+           tags$h1("Financial attitudes in UK households: the Bank of England survey")
+           )
+  )
+  ),
   
   # Sidebar with controls to select a dataset
   fluidRow(
     column(4,
-           wellPanel(selectInput("year", label=h5("Select a year of the Bank of England-NMG household survey"),
+           wellPanel(radioButtons("year", label=h5("Select a year of the Bank of England household survey"),
                                  choices=c("2009","2010","2011"), selected = "2009"),
                      #h5("Select the number of household typologies"),
                      #actionButton("clusttwo", label=h2("2")),
                      #actionButton("clustfour", label=h2("4")),
-                     radioButtons("clustnum", label=h5("What is the level of clustering that you wish to apply on households?"),
+                     radioButtons("clustnum", label=h5("What is the level of household type partitions that you wish to see?"),
                                   choices=c("Broad","Detailed"), selected="Broad"),
                      style = "height: 250px;"
            )
@@ -33,23 +44,25 @@ shinyUI(fluidPage(
     column(4,
            #conditionalPanel(condition="input.year=='2009' & input.clusttwo > input.clustfour",
            conditionalPanel(condition="input.year=='2009' & input.clustnum=='Broad'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel(h4("Secure"), value=1, icon=icon("user")),
-                                            tabPanel(h4("Struggling"), value=2, icon=icon("user")),
+                                            tabPanel("Secure households", value=1, icon=icon("user")),
+                                            tabPanel("Struggling households", value=2, icon=icon("user")),
                                             widths=c(12,12),
                                             id='hh09_two'
                                             #id='hhclust'
-                                            ),
-                                          p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
-                            )
+                                            )#,
+                                          #p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
+                            #)
                             ),
                                                   
            #conditionalPanel(condition="input.year=='2009' & input.clusttwo <= input.clustfour",
            conditionalPanel(condition="input.year=='2009' & input.clustnum=='Detailed'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon = icon("users")),
                                             tabPanel("Highly Secure", value=1, icon = icon("user")),
                                             tabPanel("Secure but worried", value=2, icon = icon("user")),
@@ -58,59 +71,63 @@ shinyUI(fluidPage(
                                             widths=c(12,12),
                                             id='hh09_four'
                                             #id='hhclust'
-                                          ),
-                                          p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
-                            )
+                                          )#,
+                                          #p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
+                            #)
                             ),
            
            #conditionalPanel(condition="input.year=='2010' & input.clusttwo > input.clustfour",
            conditionalPanel(condition="input.year=='2010' & input.clustnum=='Broad'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel(h4("Secure"), value=1, icon=icon("user")),
-                                            tabPanel(h4("Struggling"), value=2, icon=icon("user")),
+                                            tabPanel("Secure households", value=1, icon=icon("user")),
+                                            tabPanel("Struggling households", value=2, icon=icon("user")),
                                             widths=c(12,12),
                                             id='hh10_two'
                                             #id='hhclust'
-                                          ),
-                                          p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
-                            )
+                                          )#,
+                                          #p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
+                            #)
            ),
            
            #conditionalPanel(condition="input.year=='2010' & input.clusttwo > input.clustfour",
            conditionalPanel(condition="input.year=='2010' & input.clustnum=='Detailed'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon=icon("users")),
-                                            helpText("There does not seem to be further than two levels of financial typology in 2010"),
+                                            helpText("There does not seem to be further than two levels of household types in 2010"),
                                             widths=c(12,12),
                                             id='hh10_four'
                                             #id='hhclust'
                                           )             
-                            )
+                            #)
            ),
            
            
            #conditionalPanel(condition="input.year=='2011' & input.clusttwo > input.clustfour",
            conditionalPanel(condition="input.year=='2011' & input.clustnum=='Broad'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel(h4("Secure"), value=1, icon=icon("user")),
-                                            tabPanel(h4("Struggling"), value=2, icon=icon("user")),
+                                            tabPanel("Secure households", value=1, icon=icon("user")),
+                                            tabPanel("Struggling households", value=2, icon=icon("user")),
                                             widths=c(12,12),
                                             id='hh11_two'
                                             #id='hhclust'
-                                          ),
-                                          p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
-                            )
+                                          )#,
+                                          #p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
+                            #)
            ),
            
            #conditionalPanel(condition="input.year=='2011' & input.clusttwo > input.clustfour",
            conditionalPanel(condition="input.year=='2011' & input.clustnum=='Detailed'",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Household types",
                                             tabPanel("All types", value=0, icon=icon("users")),
                                             tabPanel("Highly Secure", value=1, icon=icon("user")),
                                             tabPanel("Secure but worried", value=2, icon=icon("user")),
@@ -119,28 +136,30 @@ shinyUI(fluidPage(
                                             widths=c(12,12),
                                             id='hh11_four'
                                             #id='hhclust'
-                                          ),
-                                          p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
-                            )
+                                          )#,
+                                          #p("Clustering households according to questions related to financial attitude reveals the above household types",style="font-weight:bold; font-style:italic;")
+                            #)
            )     
     ),
     
     column(4,
            conditionalPanel(condition="input.mainpanelState==1",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
-                                            tabPanel("Income", value="fihhyr_a"),
-                                            tabPanel("Disposable income", value="dfihhyr_a"),
-                                            tabPanel("Unsecured debt", value="ustot_a"),
+                                            "Financial position",
+                                            tabPanel("Income", value="fihhyr_a", icon=icon("gbp")),
+                                            tabPanel("Disposable income", value="dfihhyr_a", icon=icon("gbp")),
+                                            tabPanel("Unsecured debt", value="ustot_a", icon=icon("credit-card")),
                                             widths=c(12,12),
                                             id="finance"
-                                          ),
-                                          p("What is the financial position of this household type?",style="font-weight:bold; font-style:italic;")
-                            )
+                                          )#,
+                                          #p("What is the financial position of this household type?",style="font-weight:bold; font-style:italic;")
+                            #)
            ),
            conditionalPanel(condition="input.mainpanelState==2",
-                            absolutePanel(height='250px', width='400px',
+                            #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
+                                            "Demographics",
                                             tabPanel("Location", value=1),
                                             tabPanel("Age & Gender", value=2),
                                             tabPanel("Family", value=3),
@@ -148,9 +167,9 @@ shinyUI(fluidPage(
                                             tabPanel("Location", value=5),
                                             widths=c(12,12),
                                             id='demog'
-                                            ),
-                                          p("What are the demographics of this household type?",style="font-weight:bold; font-style:italic;")
-                            )
+                                            )#,
+                                          #p("What are the demographics of this household type?",style="font-weight:bold; font-style:italic;")
+                            #)
            )
     )
   ),
@@ -162,10 +181,12 @@ shinyUI(fluidPage(
         tags$h5("Financial position and attitudes"),
         fluidRow(
           column(7,
-                 plotOutput("mdsplot", height=700), textOutput("clust")
+                 helpText(tags$h4("  ")),
+                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
+                 plotOutput("mdsplot", height="900px")#, textOutput("clust")
                  ),
           column(5,
-                 plotOutput("attplot", height=1200, width='90%'), tableOutput("summary") #textOutput("finance"),
+                 plotOutput("attplot", height="1100px", width='95%')#, tableOutput("summary") #textOutput("finance"),
           )
           ),
         value=1

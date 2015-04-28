@@ -4,9 +4,9 @@ library(ggplot2)
 library(RColorBrewer)
 
 #Read data
-s2009 <- read.csv('s09.csv') #fileEncoding='latin1')
-s2010 <- read.csv('s10.csv') #fileEncoding='latin1')
-s2011 <- read.csv('s11.csv') #fileEncoding='latin1')
+s2009 <- read.csv('s09.csv' , fileEncoding='latin1')
+s2010 <- read.csv('s10.csv' , fileEncoding='latin1')
+s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
@@ -15,29 +15,6 @@ s2010 <- s2010[rownames(s2010)!=302,]
 clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
 clusternew <- factor(as.character(clusternew))
 s2009$clust4 <- clusternew
-
-#Change labels of billscc and saving to break them into two lines
-for(year in 2009:2011){
-  temp <- eval(parse(text=paste0('s',year)))
-  temp$billscc <- as.character(temp$billscc)
-  k =1
-  for (j in levels(temp$billscc)){
-    if(k==1)
-      temp$billscc[temp$billscc==j] <- 'falling behind\non some'
-    else if(k==2)
-      temp$billscc[temp$billscc==j] <- 'have financial problems\nfallen behind with many'
-    else if(k==3)
-      temp$billscc[temp$billscc==j] <- 'keeping up\nwithout much difficulty'
-    else if(k==4)
-      temp$billscc[temp$billscc==j] <- 'keeping up,\nconstant struggle'
-    else
-      temp$billscc[temp$billscc==j] <- 'keeping up,\nstruggle from time to time'
-    k = k+1
-  }
-  temp$billscc <- as.factor(temp$billscc)
-  assign(paste0('s',year),temp)
-}
-
 
 #Read dictionary to get correct labels and colors for clusters
 dict <- read.csv('clusterdict.csv')
@@ -90,9 +67,9 @@ shinyServer(function(input, output) {
   #get data according to number of clusters chosen by user
   dataSub <- reactive({
     if(input$clustnum=='Broad')
-      x <- cbind(dat()[,allvar],'clust'=dat()[,'clust2'])
+      x <- cbind(dat()[,names(dat()) %in% allvar],'clust'=dat()[,'clust2'])
     else
-      x <- cbind(dat()[,allvar],'clust'=dat()[,'clust4'])
+      x <- cbind(dat()[,names(dat()) %in% allvar],'clust'=dat()[,'clust4'])
   })
   
   #remove don't know/refused/not applicable observations in financial variable
@@ -220,6 +197,20 @@ shinyServer(function(input, output) {
     x <- histfinancelabeller(input$finance)
   })
   
+  histfinancetitler <- function(finance){
+    if (finance=='fihhyr_a')
+      y <- 'Household distribution of income'
+    else if(finance=='dfihhyr_a')
+      y <- 'Household distribution of disposable income'
+    else
+      y <- 'Household distribution of unsecured debt'
+    return(y)
+  }
+  
+  histlabelTi <- reactive({
+    x <- histfinancetitler(input$finance)
+  })
+  
   #Get x and y coordinates to label percentage values 
   percentx <- reactive({
     x <- min(newdataSub()$mds1) + 0.87*(max(newdataSub()$mds1)-min(newdataSub()$mds1))
@@ -266,7 +257,7 @@ shinyServer(function(input, output) {
   ##############
   
   #Test whether variables are as expected
-  output$clust <- renderText(y <- histweight())
+  #output$clust <- renderText(y <- histweight())
   #output$total <- renderText(y <- )
   #output$finance <- renderText(y <- labelFin())
   
@@ -276,8 +267,8 @@ shinyServer(function(input, output) {
     hh1 <- hh + geom_point(aes(x=newdataSub()$mds1,y=newdataSub()$mds2,
                                colour=factor(newclust(), labels=labelSub()), 
                                size=numFin()
-    ),alpha=0.5
-    )
+    ),alpha=0.5,shape=19
+    ) #+ coord_fixed()
     hh2 <- hh1 + geom_text(aes(x=percentx(),y=percenty(),label=paste0(percentValue(),'%')),
                            data = data.frame(), #impt! to prevent overplotting
                            size=20, colour=percentcolourSub(), alpha=0.9)
@@ -287,7 +278,7 @@ shinyServer(function(input, output) {
     source('theme_mine.R')
     hh4 <- hh3 + theme_mine()
     hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
-    hh6 <- hh5 + xlab('First dimension of separation') + ylab('Second dimension of separation')
+    hh6 <- hh5 + xlab('First dimension of separation') + ylab('Second dimension of separation') #+ ggtitle(mdstitle)
     print(hh6)
     
     #histogram density plot
@@ -298,7 +289,7 @@ shinyServer(function(input, output) {
                              colour='white',alpha=0.6)
     source('theme_histogram.R')
     jj2 <- jj1 + scale_fill_manual(values=histcolourSub()) + theme_histogram() + scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
-    jj3 <- jj2 + ggtitle('Relative frequency of households') + xlab(histlabelFin())
+    jj3 <- jj2 + ggtitle(histlabelTi()) + xlab(histlabelFin())
     print(jj3, vp=vp)
   })
   
@@ -374,18 +365,33 @@ shinyServer(function(input, output) {
     x <- aggregatorup('billscc',newdataSub(),newclust(),cluster()) #use aggregatorup
   })
   
-  hscntcr1 <- reactive({
-    x <- aggregator('hscntcr1',newdataSub(),newclust(),cluster())
-  })
-  
-  xphdr6 <- reactive({
-    x <- aggregator('xphdr6',newdataSub(),newclust(),cluster())
-  })
-  
-  saving <- reactive({
-    x <- aggregator('saving',newdataSub(),newclust(),cluster())
-  })
-  
+  #if(input$year=='2009'| input$year=='2010'){
+    hscntcr1 <- reactive({
+      x <- aggregator('hscntcr1',newdataSub(),newclust(),cluster())
+    })
+    
+    xphdr6 <- reactive({
+      x <- aggregator('xphdr6',newdataSub(),newclust(),cluster())
+    })
+    
+    saving <- reactive({
+      x <- aggregatorup('saving',newdataSub(),newclust(),cluster()) #use aggregatorup
+    })
+  #}
+  #else{
+    fisc_impact5 <- reactive({
+      x <- aggregator('fisc_impact5',newdataSub(),newclust(),cluster())
+    })
+    
+    fisc11_act3 <- reactive({
+      x <- aggregator('fisc11_act3',newdataSub(),newclust(),cluster())
+    })
+    
+    uncert <- reactive({
+      x <- aggregatorup('uncert',newdataSub(),newclust(),cluster()) #use aggregatorup
+    })
+  #}
+    
   #show table
   #output$summary <- renderTable({ y <- xphsdf()})
   
@@ -394,16 +400,16 @@ shinyServer(function(input, output) {
   
   #Plot attitude questions according to year
   output$attplot <- renderPlot({
-   # if(input$year=='2009'){
+
       #billscc
-    bb1 <- ggplot(data=billscc(), environment=environment())
-    bb2 <- bb1 + geom_bar(aes(x=billscc()$newname,y=billscc()$percentage,fill=factor(billscc()$newclust, labels=labelSub())),
+      bb1 <- ggplot(data=billscc(), environment=environment())
+      bb2 <- bb1 + geom_bar(aes(x=billscc()$newname,y=billscc()$percentage,fill=factor(billscc()$newclust, labels=labelSub())),
                           stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
-    bb3 <- bb2 + geom_text(aes(x=billscc()$newname,y=billscc()$percentage,label=paste0(billscc()$percentage,'%'),group=factor(billscc()$newclust)),
+      bb3 <- bb2 + geom_text(aes(x=billscc()$newname,y=billscc()$percentage,label=paste0(billscc()$percentage,'%'),group=factor(billscc()$newclust)),
                            position=position_dodge(width=1),vjust=0)
-    bb4 <- bb3 + scale_fill_manual(name='Household type',values=colourSub()) + theme_attitude_upright()
-    bb5 <- bb4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
-    bb6 <- bb5 + xlab('') + ylab('percentage (%)') + ggtitle ('How are you keeping up with your credit commitments?')
+      bb4 <- bb3 + scale_fill_manual(name='Household type',values=colourSub()) + theme_attitude_upright()
+      bb5 <- bb4 + scale_x_discrete(labels=billscclabels) + scale_y_continuous(limits=c(0,90)) #+ guides(fill = guide_(nrow = 2))
+      bb6 <- bb5 + xlab('') + ylab('percentage (%)') + ggtitle ('How are you keeping up with your credit commitments?')
     
       #xphsdf
       pp1 <- ggplot(data=xphsdf(), environment=environment())
@@ -414,43 +420,72 @@ shinyServer(function(input, output) {
       pp4 <- pp3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
       pp5 <- pp4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
       pp6 <- pp5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulties in paying for accommodation')
-      #hscntcr1
-      qq1 <- ggplot(data=hscntcr1(), environment=environment())
-      qq2 <- qq1 + geom_bar(aes(x=hscntcr1()$newname,y=hscntcr1()$percentage,fill=factor(hscntcr1()$newclust, labels=revlabelSub())),
-                            stat='identity',position='dodge', alpha=0.6) + coord_flip()
-      qq3 <- qq2 + geom_text(aes(x=hscntcr1()$newname,y=hscntcr1()$percentage,label=paste0(hscntcr1()$percentage,'%'),group=factor(hscntcr1()$newclust)),
-                             position=position_dodge(width=1),hjust=0)
-      qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
-      qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-      qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Putting off spending because of credit concerns')
-      #xphdr6
-      rr1 <- ggplot(data=xphdr6(), environment=environment())
-      rr2 <- rr1 + geom_bar(aes(x=xphdr6()$newname,y=xphdr6()$percentage,fill=factor(xphdr6()$newclust, labels=revlabelSub())),
-                            stat='identity',position='dodge', alpha=0.6) + coord_flip()
-      rr3 <- rr2 + geom_text(aes(x=xphdr6()$newname,y=xphdr6()$percentage,label=paste0(xphdr6()$percentage,'%'),group=factor(xphdr6()$newclust)),
-                             position=position_dodge(width=1),hjust=0)
-      rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
-      rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-      rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulty in credit commitments due to Unemployment')
-      #saving
-      ss1 <- ggplot(data=saving(), environment=environment())
-      ss2 <- ss1 + geom_bar(aes(x=saving()$newname,y=saving()$percentage,fill=factor(saving()$newclust, labels=revlabelSub())),
-                           stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
-      ss3 <- ss2 + geom_text(aes(x=saving()$newname,y=saving()$percentage,label=paste0(saving()$percentage,'%'),group=factor(saving()$newclust)),
-                             position=position_dodge(width=1),vjust=0)
-      ss4 <- ss3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude_upright()
-      ss5 <- ss4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-      ss6 <- ss5 + xlab('') + ylab('percentage (%)') + ggtitle ('Planning to increase the amount of savings')
+      
+      if(input$year=='2009' | input$year=='2010'){
+        #hscntcr1
+        qq1 <- ggplot(data=hscntcr1(), environment=environment())
+        qq2 <- qq1 + geom_bar(aes(x=hscntcr1()$newname,y=hscntcr1()$percentage,fill=factor(hscntcr1()$newclust, labels=revlabelSub())),
+                              stat='identity',position='dodge', alpha=0.6) + coord_flip()
+        qq3 <- qq2 + geom_text(aes(x=hscntcr1()$newname,y=hscntcr1()$percentage,label=paste0(hscntcr1()$percentage,'%'),group=factor(hscntcr1()$newclust)),
+                               position=position_dodge(width=1),hjust=0)
+        qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
+        qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Putting off spending because of credit concerns')
+        #xphdr6
+        rr1 <- ggplot(data=xphdr6(), environment=environment())
+        rr2 <- rr1 + geom_bar(aes(x=xphdr6()$newname,y=xphdr6()$percentage,fill=factor(xphdr6()$newclust, labels=revlabelSub())),
+                              stat='identity',position='dodge', alpha=0.6) + coord_flip()
+        rr3 <- rr2 + geom_text(aes(x=xphdr6()$newname,y=xphdr6()$percentage,label=paste0(xphdr6()$percentage,'%'),group=factor(xphdr6()$newclust)),
+                               position=position_dodge(width=1),hjust=0)
+        rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
+        rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulty in credit commitments due to Unemployment')
+        #saving
+        ss1 <- ggplot(data=saving(), environment=environment())
+        ss2 <- ss1 + geom_bar(aes(x=saving()$newname,y=saving()$percentage,fill=factor(saving()$newclust, labels=labelSub())),
+                              stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
+        ss3 <- ss2 + geom_text(aes(x=saving()$newname,y=saving()$percentage,label=paste0(saving()$percentage,'%'),group=factor(saving()$newclust)),
+                               position=position_dodge(width=1),vjust=0)
+        ss4 <- ss3 + scale_fill_manual(name='Household type',values=colourSub(),guide=FALSE) + theme_attitude_upright()
+        ss5 <- ss4 + scale_x_discrete(labels=savinglabels) #+ scale_y_continuous(limits=c(0,80)) #+ guides(fill = guide_legend(nrow = 1))
+        ss6 <- ss5 + xlab('') + ylab('percentage (%)') + ggtitle ('Planning to increase the amount of savings')
+      }
+      else{
+        #fisc_impact5
+        qq1 <- ggplot(data=fisc_impact5(), environment=environment())
+        qq2 <- qq1 + geom_bar(aes(x=fisc_impact5()$newname,y=fisc_impact5()$percentage,fill=factor(fisc_impact5()$newclust, labels=revlabelSub())),
+                              stat='identity',position='dodge', alpha=0.6) + coord_flip()
+        qq3 <- qq2 + geom_text(aes(x=fisc_impact5()$newname,y=fisc_impact5()$percentage,label=paste0(fisc_impact5()$percentage,'%'),group=factor(fisc_impact5()$newclust)),
+                               position=position_dodge(width=1),hjust=0)
+        qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
+        qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes due to govt budget measures')
+        
+        #fisc11_act3
+        rr1 <- ggplot(data=fisc11_act3(), environment=environment())
+        rr2 <- rr1 + geom_bar(aes(x=fisc11_act3()$newname,y=fisc11_act3()$percentage,fill=factor(fisc11_act3()$newclust, labels=revlabelSub())),
+                              stat='identity',position='dodge', alpha=0.6) + coord_flip()
+        rr3 <- rr2 + geom_text(aes(x=fisc11_act3()$newname,y=fisc11_act3()$percentage,label=paste0(fisc11_act3()$percentage,'%'),group=factor(fisc11_act3()$newclust)),
+                               position=position_dodge(width=1),hjust=0)
+        rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
+        rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Responded to govt budget measures by looking for a new job')
+        
+        #uncert
+        ss1 <- ggplot(data=uncert(), environment=environment())
+        ss2 <- ss1 + geom_bar(aes(x=uncert()$newname,y=uncert()$percentage,fill=factor(uncert()$newclust, labels=labelSub())),
+                              stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
+        ss3 <- ss2 + geom_text(aes(x=uncert()$newname,y=uncert()$percentage,label=paste0(uncert()$percentage,'%'),group=factor(uncert()$newclust)),
+                               position=position_dodge(width=1),vjust=0)
+        ss4 <- ss3 + scale_fill_manual(name='Household type',values=colourSub(),guide=FALSE) + theme_attitude_upright()
+        ss5 <- ss4 #+ scale_x_discrete(labels=savinglabels) #+ scale_y_continuous(limits=c(0,80)) #+ guides(fill = guide_legend(nrow = 1))
+        ss6 <- ss5 + xlab('') + ylab('percentage (%)') + ggtitle ('Certainty in household income a year from now')
+      }
       
       allplot <- grid.arrange(bb6,pp6,qq6,rr6,ss6,
-                              ncol=1,
-                              heights=c(1.5,1,1,1,1.5))
+                                ncol=1,
+                                heights=c(1.8,1,1,1,1.8))
       print(allplot)
-   # }
-    #else if(input$year=='2010'){
-      
-    #}
-    
   })
   
 })
