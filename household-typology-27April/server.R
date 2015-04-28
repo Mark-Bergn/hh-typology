@@ -2,16 +2,20 @@ library(data.table)
 library(gridExtra)
 library(ggplot2)
 library(RColorBrewer)
+library(sp)
 
 #Read data
 s2009 <- read.csv('s09.csv' , fileEncoding='latin1')
 s2010 <- read.csv('s10.csv' , fileEncoding='latin1')
 s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
-load('map.r')
+load('map.rdata')
 
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
+
+
+
 
 #Change order of cluster in clusternew
 clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
@@ -500,8 +504,85 @@ shinyServer(function(input, output) {
   })
   
   
+  demclust <- reactive({
+    x <- clusterfactor(cluster(),dataSub())
+  })
   
   
+  sex <- reactive({
+    x <- aggregator('sex',dataSub(),demclust(),cluster())
+  })
+  
+  
+  age_grp <- reactive({
+    x <- aggregator('age_grp',dataSub(),demclust(),cluster())
+  })
+  
+  
+  qual <- reactive({
+    x <- aggregator('qual',dataSub(),demclust(),cluster())
+  })
+  
+  
+  jbstat <- reactive({
+    x <- aggregator('jbstat',dataSub(),demclust(),cluster())
+  })
+  
+  
+  output$demplot  <- renderPlot({
+    se1 <- ggplot(data=sex(), environment=environment())
+    se2 <- se1 + geom_bar(aes(x=sex()$newname,y=sex()$percentage,fill=factor(sex()$newclust, labels=revlabelSub())),
+                          stat='identity',position='dodge', alpha=0.6) + coord_flip()
+    se3 <- se2 + geom_text(aes(x=sex()$newname,y=sex()$percentage,label=paste0(sex()$percentage,'%'),group=factor(sex()$newclust)),
+                           position=position_dodge(width=1),hjust=0)
+    se4 <- se3 + scale_fill_manual(name='Household type',values=revcolourSub()) + theme_attitude()
+    se5 <- se4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+    se6 <- se5 + xlab('') + ylab('percentage (%)') + ggtitle ('Gender')
+    
+    
+    
+    
+    
+    
+    ag1 <- ggplot(data=age_grp(), environment=environment())
+    ag2 <- ag1 + geom_bar(aes(x=age_grp()$newname,y=age_grp()$percentage,fill=factor(age_grp()$newclust, labels=labelSub())),
+                          stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
+    ag3 <- ag2 + geom_text(aes(x=age_grp()$newname,y=age_grp()$percentage,label=paste0(age_grp()$percentage,'%'),group=factor(age_grp()$newclust)),
+                           position=position_dodge(width=1),vjust=0)
+    ag4 <- ag3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
+    ag5 <- ag4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
+    ag6 <- ag5 + xlab('') + ylab('percentage (%)') + ggtitle ('Age Groups (years)')
+    
+    
+    
+    qu1 <- ggplot(data=qual(), environment=environment())
+    qu2 <- qu1 + geom_bar(aes(x=qual()$newname,y=qual()$percentage,fill=factor(qual()$newclust, labels=revlabelSub())),
+                          stat='identity',position='dodge', alpha=0.6) + coord_flip()
+    qu3 <- qu2 + geom_text(aes(x=qual()$newname,y=qual()$percentage,label=paste0(qual()$percentage,'%'),group=factor(qual()$newclust)),
+                           position=position_dodge(width=1),vjust=0)
+    qu4 <- qu3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
+    qu5 <- qu4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
+    qu6 <- qu5 + xlab('') + ylab('percentage (%)') + ggtitle ('Level of Qualification')
+    
+    
+    jb1 <- ggplot(data=jbstat(), environment=environment())
+    jb2 <- jb1 + geom_bar(aes(x=jbstat()$newname,y=jbstat()$percentage,fill=factor(jbstat()$newclust, labels=revlabelSub())),
+                          stat='identity',position='dodge', alpha=0.6) + coord_flip()
+    jb3 <- jb2 + geom_text(aes(x=jbstat()$newname,y=jbstat()$percentage,label=paste0(jbstat()$percentage,'%'),group=factor(jbstat()$newclust)),
+                           position=position_dodge(width=1),hjust=0)
+    jb4 <- jb3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
+    jb5 <- jb4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+    jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle ('Job Status')
+    
+    
+    
+    alldemplot  <- grid.arrange(se6, ag6, qu6, jb6,
+                               ncol=1,
+                               heights=c(1, 1.8, 2, 2) )
+    
+    print(alldemplot)
+  })
+
 })
   
 

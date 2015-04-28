@@ -159,16 +159,9 @@ shinyUI(fluidPage(
            conditionalPanel(condition="input.mainpanelState==2",
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
-<<<<<<< HEAD
                                             "Demographics",
-                                            tabPanel("Location", value=1),
-                                            tabPanel("Age & Gender", value=2),
-=======
-                                            tabPanel("Age", value=1),
-                                            tabPanel("Gender", value=2),
->>>>>>> origin/master
-                                            tabPanel("Family", value=3),
-                                            tabPanel("Qualifications", value=4),
+                                            tabPanel("Individuals", value=1),
+                                            tabPanel("Families", value=2),
                                             widths=c(12,12),
                                             id='demog'
                                             )#,
@@ -202,7 +195,8 @@ shinyUI(fluidPage(
                   plotOutput("mapplot", height=1200, width = '90%')
                   ),
           column(5,
-                  helpText('Demographics') 
+                 helpText('Demographics'),
+                  plotOutput("demplot", height=1200, width = '90%')
                   )
           ),      
                value=2

@@ -22,7 +22,9 @@ subdat<-gSimplify(boe,tol=0.03, topologyPreserve=TRUE)
 subdat<-SpatialPolygonsDataFrame(subdat, data=subdat_data)
 
 boe  <- subdat
+plot(boe)
 
+save(boe, file="../household-typology-27April/map.r")
 
 #collapse the s2009 through to s2011 by cluster for each gor
 
