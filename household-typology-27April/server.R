@@ -509,76 +509,128 @@ shinyServer(function(input, output) {
   })
   
   
-  sex <- reactive({
-    x <- aggregator('sex',dataSub(),demclust(),cluster())
+  ##normal
+  plot1 <- reactive({
+    if(input$demog==1){
+        x <- aggregator('age_grp', dataSub(), demclust(), cluster())
+    #    lab1  <- 'Age Groups (years)'
+    }else{
+        x <- aggregator('nkids',dataSub(),demclust(),cluster())
+      #  lab1  <- 'Number of Kids'
+    }
+  })
+  # 'nkids'
+
+  plot1lab <- reactive({
+    if(input$demog==1){
+       lab1  <- 'Age Groups (years)'
+    }else{
+       lab1  <- 'Number of Kids'
+    }
   })
   
+  ##flipped
+  plot2 <- reactive({
+    if(input$demog==1){
+        x <- aggregator('sex',dataSub(),demclust(),cluster())
+    }else{ ##having an issue when using tenure
+        x <- aggregator('sex',dataSub(),demclust(),cluster())
+    }
+  })
+  #'tenure'
   
-  age_grp <- reactive({
-    x <- aggregator('age_grp',dataSub(),demclust(),cluster())
+  ##flipped
+  plot2lab <- reactive({
+    if(input$demog==1){
+        lab2  <- 'Gender'
+    }else{
+        lab2  <- 'Housing Situation'
+    }
   })
   
-  
-  qual <- reactive({
-    x <- aggregator('qual',dataSub(),demclust(),cluster())
+  ##normal
+  plot3 <- reactive({
+    if(input$demog==1){
+        x <- aggregator('qual',dataSub(),demclust(),cluster())
+    }else{
+        x <- aggregator('hhsize',dataSub(),demclust(),cluster())
+    }
+  })
+  #'hhsize'
+
+  plot3lab <- reactive({
+    if(input$demog==1){
+        lab3  <- 'Qualifications'
+    }else{
+        lab3  <- 'Household Size'
+    }
+  })
+
+  ##flipped
+  plot4 <- reactive({
+    if(input$demog==1){
+        x <- aggregator('jbstat',dataSub(),demclust(),cluster())
+    }else{
+        x <- aggregator('mastat',dataSub(),demclust(),cluster())
+    }
+  })
+  #'mastat'
+  plot4lab <- reactive({
+    if(input$demog==1){
+        lab4  <- 'Job Status'
+    }else{
+        lab4  <- 'Married Status'
+    }
   })
   
-  
-  jbstat <- reactive({
-    x <- aggregator('jbstat',dataSub(),demclust(),cluster())
-  })
   
   
   output$demplot  <- renderPlot({
-    se1 <- ggplot(data=sex(), environment=environment())
-    se2 <- se1 + geom_bar(aes(x=sex()$newname,y=sex()$percentage,fill=factor(sex()$newclust, labels=revlabelSub())),
-                          stat='identity',position='dodge', alpha=0.6) + coord_flip()
-    se3 <- se2 + geom_text(aes(x=sex()$newname,y=sex()$percentage,label=paste0(sex()$percentage,'%'),group=factor(sex()$newclust)),
-                           position=position_dodge(width=1),hjust=0)
-    se4 <- se3 + scale_fill_manual(name='Household type',values=revcolourSub()) + theme_attitude()
-    se5 <- se4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-    se6 <- se5 + xlab('') + ylab('percentage (%)') + ggtitle ('Gender')
     
-    
-    
-    
-    
-    
-    ag1 <- ggplot(data=age_grp(), environment=environment())
-    ag2 <- ag1 + geom_bar(aes(x=age_grp()$newname,y=age_grp()$percentage,fill=factor(age_grp()$newclust, labels=labelSub())),
+    ag1 <- ggplot(data=plot1(), environment=environment())
+    ag2 <- ag1 + geom_bar(aes(x=plot1()$newname,y=plot1()$percentage,fill=factor(plot1()$newclust, labels=labelSub())),
                           stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
-    ag3 <- ag2 + geom_text(aes(x=age_grp()$newname,y=age_grp()$percentage,label=paste0(age_grp()$percentage,'%'),group=factor(age_grp()$newclust)),
+    ag3 <- ag2 + geom_text(aes(x=plot1()$newname,y=plot1()$percentage,label=paste0(plot1()$percentage,'%'),group=factor(plot1()$newclust)),
                            position=position_dodge(width=1),vjust=0)
     ag4 <- ag3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
     ag5 <- ag4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
-    ag6 <- ag5 + xlab('') + ylab('percentage (%)') + ggtitle ('Age Groups (years)')
+    ag6 <- ag5 + xlab('') + ylab('percentage (%)') + ggtitle (plot1lab())
     
-    
-    
-    qu1 <- ggplot(data=qual(), environment=environment())
-    qu2 <- qu1 + geom_bar(aes(x=qual()$newname,y=qual()$percentage,fill=factor(qual()$newclust, labels=revlabelSub())),
+    se1 <- ggplot(data=plot2(), environment=environment())
+    se2 <- se1 + geom_bar(aes(x=plot2()$newname,y=plot2()$percentage,fill=factor(plot2()$newclust, labels=revlabelSub())),
                           stat='identity',position='dodge', alpha=0.6) + coord_flip()
-    qu3 <- qu2 + geom_text(aes(x=qual()$newname,y=qual()$percentage,label=paste0(qual()$percentage,'%'),group=factor(qual()$newclust)),
+    se3 <- se2 + geom_text(aes(x=plot2()$newname,y=plot2()$percentage,label=paste0(plot2()$percentage,'%'),group=factor(plot2()$newclust)),
+                           position=position_dodge(width=1),hjust=0)
+    se4 <- se3 + scale_fill_manual(name='Household type',values=revcolourSub()) + theme_attitude()
+    se5 <- se4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+    se6 <- se5 + xlab('') + ylab('percentage (%)') + ggtitle (plot2lab())
+    
+    
+    
+    qu1 <- ggplot(data=plot3(), environment=environment())
+    qu2 <- qu1 + geom_bar(aes(x=plot3()$newname,y=plot3()$percentage,fill=factor(plot3()$newclust, labels=labelSub())),
+                          stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
+    qu3 <- qu2 + geom_text(aes(x=plot3()$newname,y=plot3()$percentage,label=paste0(plot3()$percentage,'%'),group=factor(plot3()$newclust)),
                            position=position_dodge(width=1),vjust=0)
     qu4 <- qu3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
     qu5 <- qu4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
-    qu6 <- qu5 + xlab('') + ylab('percentage (%)') + ggtitle ('Level of Qualification')
+    qu6 <- qu5 + xlab('') + ylab('percentage (%)') + ggtitle (plot3lab())
     
     
-    jb1 <- ggplot(data=jbstat(), environment=environment())
-    jb2 <- jb1 + geom_bar(aes(x=jbstat()$newname,y=jbstat()$percentage,fill=factor(jbstat()$newclust, labels=revlabelSub())),
+    jb1 <- ggplot(data=plot4(), environment=environment())
+    jb2 <- jb1 + geom_bar(aes(x=plot4()$newname,y=plot4()$percentage,fill=factor(plot4()$newclust, labels=revlabelSub())),
                           stat='identity',position='dodge', alpha=0.6) + coord_flip()
-    jb3 <- jb2 + geom_text(aes(x=jbstat()$newname,y=jbstat()$percentage,label=paste0(jbstat()$percentage,'%'),group=factor(jbstat()$newclust)),
+    jb3 <- jb2 + geom_text(aes(x=plot4()$newname,y=plot4()$percentage,label=paste0(plot4()$percentage,'%'),group=factor(plot4()$newclust)),
                            position=position_dodge(width=1),hjust=0)
     jb4 <- jb3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
     jb5 <- jb4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-    jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle ('Job Status')
+    jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle (plot4lab())
     
     
     
-    alldemplot  <- grid.arrange(se6, ag6, qu6, jb6,
+    alldemplot  <- grid.arrange(ag6, se6, qu6, jb6,
                                ncol=1,
-                               heights=c(1, 1.8, 2, 2) )
+                               heights=c(1.5, 1.8, 1.8, 1.8) )
     
     print(alldemplot)
   })
