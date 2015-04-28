@@ -23,11 +23,24 @@ subdat<-SpatialPolygonsDataFrame(subdat, data=subdat_data)
 
 boe  <- subdat
 
-boe$value1  <- 1:length(boe$NAME)
-boe$value2  <- rnorm(1)*25
-boe$value3  <- rnorm(1)*-60
-boe$value4  <- rnorm(1)*55
-boe$value5  <- rnorm(1)*200
+
+#collapse the s2009 through to s2011 by cluster for each gor
+
+s2009_gor4  <- s2009 %>%
+  group_by(region, clust4) %>%
+  summarise(n = n())  
+
+s2009_gor1  <- s2009 %>%
+  group_by(region) %>%
+  summarise(n = n(), clust4=0)  
+
+
+
+s2009_gor  <- full_join(s2009_gor1, s2009_gor4) 
+
+boe@data  <- left_join(boe@data, s2009_gor, by = c("NAME", "region"))
+?left_join
+
 
 #create a dataframe
 boedf  <-  fortify(boe)

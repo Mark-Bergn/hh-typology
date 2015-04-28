@@ -8,6 +8,8 @@ s2009 <- read.csv('s09.csv') #fileEncoding='latin1')
 s2010 <- read.csv('s10.csv') #fileEncoding='latin1')
 s2011 <- read.csv('s11.csv') #fileEncoding='latin1')
 
+load('map.r')
+
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
 
@@ -452,6 +454,18 @@ shinyServer(function(input, output) {
     #}
     
   })
+  
+  ###########################
+  #########Plot Map##########
+  ###########################
+  
+  
+  output$mapplot  <- renderPlot({
+    plot(boe)
+  })
+  
+  
+  
   
 })
   

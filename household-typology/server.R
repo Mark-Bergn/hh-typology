@@ -370,7 +370,12 @@ shinyServer(function(input, output) {
     print(pp6)
   })
   
+  output$testplot  <- renderPlot({plot(x=1:100, y=1:100)})
+  
 })
+
+
+
 
 
 
