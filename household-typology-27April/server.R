@@ -14,13 +14,10 @@ load('map.rdata')
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
 
-
-
-
 #Change order of cluster in clusternew
-clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
-clusternew <- factor(as.character(clusternew))
-s2009$clust4 <- clusternew
+#clusternew <- sapply(s2009$clust4, function(x){if(x==2) y<-'3' else if(x==3) y<-'2' else y <- x})
+#clusternew <- factor(as.character(clusternew))
+#s2009$clust4 <- clusternew
 
 #Read dictionary to get correct labels and colors for clusters
 dict <- read.csv('clusterdict.csv')
@@ -33,7 +30,7 @@ source('labels.R')
 allclust <- c("hh09_two","hh09_four","hh10_two","hh10_four","hh11_two","hh11_four")
 #store all desired variables for plotting in a vector
 allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a",
-            "xphsdf","billscc","xphdd6","xphdr11","xphdr6","uncert",  # 2009
+            "xphsdf","billscc","hscntcr","xphdd6","xphdr11","xphdr6",  # 2009
             "xphsdf","billscc","uncert","saving", #2010
             "xphsdf","billscc","uncert","fisc_impact5","saving11","hscntcr1","fisc11_act3") #2011
 
@@ -258,13 +255,25 @@ shinyServer(function(input, output) {
     x <- labelpercentcluster(cluster(),percentlabelSub())
   })
   
+  mdsexplainer <- function(year){
+    if(year=='2009')
+      x <- paste(mdsexplain1,'30',mdsexplain2,sep=' ')
+    else if(year=='2010')
+      x <- paste(mdsexplain1,'51',mdsexplain2,sep=' ')
+    else
+      paste(mdsexplain1,'34',mdsexplain2,sep=' ')
+  }
+  
+  mdsexplain <- reactive({
+    x <- mdsexplainer(input$year)
+  })
   ##############
   #Plot clusters
   ##############
   
   #Test whether variables are as expected
   #output$clust <- renderText(y <- histweight())
-  #output$total <- renderText(y <- )
+  output$explain <- renderText(y <- mdsexplain())
   #output$finance <- renderText(y <- labelFin())
   
   #MDS plot
@@ -282,9 +291,9 @@ shinyServer(function(input, output) {
                            data = data.frame(), #impt! to prevent overplotting
                            size=5, colour=percentcolourSub(), alpha=0.9, hjust=0.2)
     source('theme_mine.R')
-    hh4 <- hh3 + theme_mine()
+    hh4 <- hh3 + theme_mine() + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
     hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
-    hh6 <- hh5 + xlab('First dimension of separation') + ylab('Second dimension of separation') #+ ggtitle(mdstitle)
+    hh6 <- hh5 + xlab('First partition (arbitrary values)') + ylab('Second partition (arbitrary values)') #+ ggtitle(mdstitle)
     print(hh6)
     
     #histogram density plot
@@ -375,6 +384,10 @@ shinyServer(function(input, output) {
     hscntcr1 <- reactive({
       x <- aggregator('hscntcr1',newdataSub(),newclust(),cluster())
     })
+  
+    hscntcr <- reactive({
+    x <- aggregator('hscntcr',newdataSub(),newclust(),cluster())
+    })
     
     xphdr6 <- reactive({
       x <- aggregator('xphdr6',newdataSub(),newclust(),cluster())
@@ -399,7 +412,7 @@ shinyServer(function(input, output) {
   #}
     
   #show table
-  #output$summary <- renderTable({ y <- xphsdf()})
+  #output$summary <- renderTable({ y <- hscntcr()})
   
   source('theme_attitude.R')
   source('theme_attitude_upright.R')
@@ -414,7 +427,7 @@ shinyServer(function(input, output) {
       bb3 <- bb2 + geom_text(aes(x=billscc()$newname,y=billscc()$percentage,label=paste0(billscc()$percentage,'%'),group=factor(billscc()$newclust)),
                            position=position_dodge(width=1),vjust=0)
       bb4 <- bb3 + scale_fill_manual(name='Household type',values=colourSub()) + theme_attitude_upright()
-      bb5 <- bb4 + scale_x_discrete(labels=billscclabels) + scale_y_continuous(limits=c(0,90)) #+ guides(fill = guide_(nrow = 2))
+      bb5 <- bb4 + scale_x_discrete(labels=billscclabels) + scale_y_continuous(limits=c(0,90)) + guides(fill = guide_legend(nrow = 2))
       bb6 <- bb5 + xlab('') + ylab('percentage (%)') + ggtitle ('How are you keeping up with your credit commitments?')
     
       #xphsdf
@@ -437,15 +450,15 @@ shinyServer(function(input, output) {
         qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
         qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
         qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Putting off spending because of credit concerns')
-        #xphdr6
-        rr1 <- ggplot(data=xphdr6(), environment=environment())
-        rr2 <- rr1 + geom_bar(aes(x=xphdr6()$newname,y=xphdr6()$percentage,fill=factor(xphdr6()$newclust, labels=revlabelSub())),
+        #hscntcr
+        rr1 <- ggplot(data=hscntcr(), environment=environment())
+        rr2 <- rr1 + geom_bar(aes(x=hscntcr()$newname,y=hscntcr()$percentage,fill=factor(hscntcr()$newclust, labels=revlabelSub())),
                               stat='identity',position='dodge', alpha=0.6) + coord_flip()
-        rr3 <- rr2 + geom_text(aes(x=xphdr6()$newname,y=xphdr6()$percentage,label=paste0(xphdr6()$percentage,'%'),group=factor(xphdr6()$newclust)),
+        rr3 <- rr2 + geom_text(aes(x=hscntcr()$newname,y=hscntcr()$percentage,label=paste0(hscntcr()$percentage,'%'),group=factor(hscntcr()$newclust)),
                                position=position_dodge(width=1),hjust=0)
         rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
         rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
-        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulty in credit commitments due to Unemployment')
+        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Actual or perceived credit constraint')
         #saving
         ss1 <- ggplot(data=saving(), environment=environment())
         ss2 <- ss1 + geom_bar(aes(x=saving()$newname,y=saving()$percentage,fill=factor(saving()$newclust, labels=labelSub())),
@@ -493,7 +506,6 @@ shinyServer(function(input, output) {
                                 heights=c(1.8,1,1,1,1.8))
       print(allplot)
   })
-  
   ###########################
   #########Plot Map##########
   ###########################
@@ -512,29 +524,29 @@ shinyServer(function(input, output) {
   ##normal
   plot1 <- reactive({
     if(input$demog==1){
-        x <- aggregator('age_grp', dataSub(), demclust(), cluster())
-    #    lab1  <- 'Age Groups (years)'
+      x <- aggregator('age_grp', dataSub(), demclust(), cluster())
+      #    lab1  <- 'Age Groups (years)'
     }else{
-        x <- aggregator('nkids',dataSub(),demclust(),cluster())
+      x <- aggregator('nkids',dataSub(),demclust(),cluster())
       #  lab1  <- 'Number of Kids'
     }
   })
   # 'nkids'
-
+  
   plot1lab <- reactive({
     if(input$demog==1){
-       lab1  <- 'Age Groups (years)'
+      lab1  <- 'Age Groups (years)'
     }else{
-       lab1  <- 'Number of Kids'
+      lab1  <- 'Number of Kids'
     }
   })
   
   ##flipped
   plot2 <- reactive({
     if(input$demog==1){
-        x <- aggregator('sex',dataSub(),demclust(),cluster())
+      x <- aggregator('sex',dataSub(),demclust(),cluster())
     }else{ ##having an issue when using tenure
-        x <- aggregator('sex',dataSub(),demclust(),cluster())
+      x <- aggregator('sex',dataSub(),demclust(),cluster())
     }
   })
   #'tenure'
@@ -542,44 +554,44 @@ shinyServer(function(input, output) {
   ##flipped
   plot2lab <- reactive({
     if(input$demog==1){
-        lab2  <- 'Gender'
+      lab2  <- 'Gender'
     }else{
-        lab2  <- 'Housing Situation'
+      lab2  <- 'Housing Situation'
     }
   })
   
   ##normal
   plot3 <- reactive({
     if(input$demog==1){
-        x <- aggregator('qual',dataSub(),demclust(),cluster())
+      x <- aggregator('qual',dataSub(),demclust(),cluster())
     }else{
-        x <- aggregator('hhsize',dataSub(),demclust(),cluster())
+      x <- aggregator('hhsize',dataSub(),demclust(),cluster())
     }
   })
   #'hhsize'
-
+  
   plot3lab <- reactive({
     if(input$demog==1){
-        lab3  <- 'Qualifications'
+      lab3  <- 'Qualifications'
     }else{
-        lab3  <- 'Household Size'
+      lab3  <- 'Household Size'
     }
   })
-
+  
   ##flipped
   plot4 <- reactive({
     if(input$demog==1){
-        x <- aggregator('jbstat',dataSub(),demclust(),cluster())
+      x <- aggregator('jbstat',dataSub(),demclust(),cluster())
     }else{
-        x <- aggregator('mastat',dataSub(),demclust(),cluster())
+      x <- aggregator('mastat',dataSub(),demclust(),cluster())
     }
   })
   #'mastat'
   plot4lab <- reactive({
     if(input$demog==1){
-        lab4  <- 'Job Status'
+      lab4  <- 'Job Status'
     }else{
-        lab4  <- 'Married Status'
+      lab4  <- 'Married Status'
     }
   })
   
@@ -629,12 +641,12 @@ shinyServer(function(input, output) {
     
     
     alldemplot  <- grid.arrange(ag6, se6, qu6, jb6,
-                               ncol=1,
-                               heights=c(1.5, 1.8, 1.8, 1.8) )
+                                ncol=1,
+                                heights=c(1.5, 1.8, 1.8, 1.8) )
     
     print(alldemplot)
   })
-
-})
   
+})
+
 

@@ -31,11 +31,11 @@ shinyUI(fluidPage(
   fluidRow(
     column(4,
            wellPanel(radioButtons("year", label=h5("Select a year of the Bank of England household survey"),
-                                 choices=c("2009","2010","2011"), selected = "2009"),
+                                 choices=c("2011","2010","2009"), selected = "2011"),
                      #h5("Select the number of household typologies"),
                      #actionButton("clusttwo", label=h2("2")),
                      #actionButton("clustfour", label=h2("4")),
-                     radioButtons("clustnum", label=h5("What is the level of household type partitions that you wish to see?"),
+                     radioButtons("clustnum", label=h5("Households can be partitioned into different groups based on financial attitudes. What is the level of partition that you wish to see?"),
                                   choices=c("Broad","Detailed"), selected="Broad"),
                      style = "height: 250px;"
            )
@@ -47,9 +47,9 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel("Secure households", value=1, icon=icon("user")),
-                                            tabPanel("Struggling households", value=2, icon=icon("user")),
+                                            tabPanel("All types", value=0, icon=icon("gears")),
+                                            tabPanel("Secure households", value=1, icon=icon("gear")),
+                                            tabPanel("Struggling households", value=2, icon=icon("gear")),
                                             widths=c(12,12),
                                             id='hh09_two'
                                             #id='hhclust'
@@ -63,11 +63,11 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon = icon("users")),
-                                            tabPanel("Highly Secure", value=1, icon = icon("user")),
-                                            tabPanel("Secure but worried", value=2, icon = icon("user")),
-                                            tabPanel("Struggling to keep up", value=3, icon = icon("user")),
-                                            tabPanel("Falling behind", value=4, icon = icon("user")),
+                                            tabPanel("All types", value=0, icon = icon("gears")),
+                                            tabPanel("Highly secure", value=1, icon = icon("gear")),
+                                            tabPanel("Conservative and secure", value=2, icon = icon("gear")),
+                                            tabPanel("Struggling but managing", value=3, icon = icon("gear")),
+                                            tabPanel("Falling behind", value=4, icon = icon("gear")),
                                             widths=c(12,12),
                                             id='hh09_four'
                                             #id='hhclust'
@@ -81,9 +81,9 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel("Secure households", value=1, icon=icon("user")),
-                                            tabPanel("Struggling households", value=2, icon=icon("user")),
+                                            tabPanel("All types", value=0, icon=icon("gears")),
+                                            tabPanel("Secure households", value=1, icon=icon("gear")),
+                                            tabPanel("Struggling households", value=2, icon=icon("gear")),
                                             widths=c(12,12),
                                             id='hh10_two'
                                             #id='hhclust'
@@ -97,7 +97,7 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon=icon("users")),
+                                            tabPanel("All types", value=0, icon=icon("gears")),
                                             helpText("There does not seem to be further than two levels of household types in 2010"),
                                             widths=c(12,12),
                                             id='hh10_four'
@@ -112,9 +112,9 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel("Secure households", value=1, icon=icon("user")),
-                                            tabPanel("Struggling households", value=2, icon=icon("user")),
+                                            tabPanel("All types", value=0, icon=icon("gears")),
+                                            tabPanel("Secure households", value=1, icon=icon("gear")),
+                                            tabPanel("Struggling households", value=2, icon=icon("gear")),
                                             widths=c(12,12),
                                             id='hh11_two'
                                             #id='hhclust'
@@ -128,11 +128,11 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Household types",
-                                            tabPanel("All types", value=0, icon=icon("users")),
-                                            tabPanel("Highly Secure", value=1, icon=icon("user")),
-                                            tabPanel("Secure but worried", value=2, icon=icon("user")),
-                                            tabPanel("Struggling to keep up", value=3, icon=icon("user")),
-                                            tabPanel("Falling behind", value=4, icon=icon("user")),
+                                            tabPanel("All types", value=0, icon=icon("gears")),
+                                            tabPanel("Highly Secure", value=1, icon=icon("gear")),
+                                            tabPanel("Secure but worried", value=2, icon=icon("gear")),
+                                            tabPanel("Struggling to keep up", value=3, icon=icon("gear")),
+                                            tabPanel("Falling behind", value=4, icon=icon("gear")),
                                             widths=c(12,12),
                                             id='hh11_four'
                                             #id='hhclust'
@@ -160,8 +160,8 @@ shinyUI(fluidPage(
                             #absolutePanel(height='250px', width='400px',
                                           navlistPanel(
                                             "Demographics",
-                                            tabPanel("Individuals", value=1),
-                                            tabPanel("Families", value=2),
+                                            tabPanel("Individuals", value=1, icon=icon("user")),
+                                            tabPanel("Families", value=2, icon=icon("users")),
                                             widths=c(12,12),
                                             id='demog'
                                             )#,
@@ -178,12 +178,16 @@ shinyUI(fluidPage(
         tags$h5("Financial position and attitudes"),
         fluidRow(
           column(7,
-                 helpText(tags$h4("  ")),
                  helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
-                 plotOutput("mdsplot", height="900px")#, textOutput("clust")
+                 #textOutput("explain",
+                  #          tags$h4(tags$style("#explain{
+                   #                            font-style:italic;line-height:150%;color:black;
+                   #                            }"))
+                    #        ),
+                 plotOutput("mdsplot", height="800px")#, textOutput("clust")
                  ),
           column(5,
-                 plotOutput("attplot", height="1100px", width='95%')#, tableOutput("summary") #textOutput("finance"),
+                 plotOutput("attplot", height="1000px", width='95%'), tableOutput("summary") #textOutput("finance"),
           )
           ),
         value=1
@@ -192,15 +196,15 @@ shinyUI(fluidPage(
         tags$h5("Demographics"),
         fluidRow(
           column(7,
-                  plotOutput("mapplot", height=800, width = '90%')
-                  ),
+                 plotOutput("mapplot", height=800, width = '90%')
+          ),
           column(5,
                  helpText('Demographics'),
-                  plotOutput("demplot", height=800, width = '90%')
-                  )
-          ),      
-               value=2
-               ),
+                 plotOutput("demplot", height=800, width = '90%')
+                 )
+          ),           
+        value=2
+        ),
       id="mainpanelState"
     )
   )
