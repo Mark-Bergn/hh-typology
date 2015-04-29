@@ -35,7 +35,7 @@ allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a",
             "xphsdf","billscc","uncert","fisc_impact5","saving11","hscntcr1","fisc11_act3") #2011
 
 #add in demographic vars
-allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual")
+allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual", "tenure_grp2")
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
@@ -527,7 +527,7 @@ shinyServer(function(input, output) {
       x <- aggregator('age_grp', dataSub(), demclust(), cluster())
       #    lab1  <- 'Age Groups (years)'
     }else{
-      x <- aggregator('nkids',dataSub(),demclust(),cluster())
+      x <- aggregator('hhsize',dataSub(),demclust(),cluster())
       #  lab1  <- 'Number of Kids'
     }
   })
@@ -537,7 +537,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       lab1  <- 'Age Groups (years)'
     }else{
-      lab1  <- 'Number of Kids'
+      lab1  <- 'Household Size'
     }
   })
   
@@ -546,7 +546,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       x <- aggregator('sex',dataSub(),demclust(),cluster())
     }else{ ##having an issue when using tenure
-      x <- aggregator('sex',dataSub(),demclust(),cluster())
+      x <- aggregator('tenure_grp2',dataSub(),demclust(),cluster())
     }
   })
   #'tenure'
@@ -565,7 +565,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       x <- aggregator('qual',dataSub(),demclust(),cluster())
     }else{
-      x <- aggregator('hhsize',dataSub(),demclust(),cluster())
+      x <- aggregator('nkids',dataSub(),demclust(),cluster())
     }
   })
   #'hhsize'
@@ -574,7 +574,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       lab3  <- 'Qualifications'
     }else{
-      lab3  <- 'Household Size'
+      lab3  <- 'Number of Kids'
     }
   })
   
@@ -639,10 +639,11 @@ shinyServer(function(input, output) {
     jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle (plot4lab())
     
     
+    ##change the order of the plots here
     
-    alldemplot  <- grid.arrange(ag6, se6, qu6, jb6,
+    alldemplot  <- grid.arrange(se6, ag6, jb6, qu6,
                                 ncol=1,
-                                heights=c(1.5, 1.8, 1.8, 1.8) )
+                                heights=c(2, 1.8, 2, 1.8) )
     
     print(alldemplot)
   })

@@ -161,7 +161,7 @@ shinyUI(fluidPage(
                                           navlistPanel(
                                             "Demographics",
                                             tabPanel("Individuals", value=1, icon=icon("user")),
-                                            tabPanel("Families", value=2, icon=icon("users")),
+                                            tabPanel("Households", value=2, icon=icon("users")),
                                             widths=c(12,12),
                                             id='demog'
                                             )#,
