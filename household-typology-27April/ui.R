@@ -35,9 +35,10 @@ shinyUI(fluidPage(
                      #h5("Select the number of household typologies"),
                      #actionButton("clusttwo", label=h2("2")),
                      #actionButton("clustfour", label=h2("4")),
-                     radioButtons("clustnum", label=h5("Households can be partitioned into different groups based on financial attitudes. What is the level of partition that you wish to see?"),
+                     radioButtons("clustnum", label=tags$h5("Households can be partitioned into different groups based on financial attitudes. What is the level of partition that you wish to see?",
+                                                            style="line-height=110%;"),
                                   choices=c("Broad","Detailed"), selected="Broad"),
-                     style = "height: 250px;"
+                     style = "padding: 20px;"
            )
            ),
     
@@ -161,7 +162,7 @@ shinyUI(fluidPage(
                                           navlistPanel(
                                             "Demographics",
                                             tabPanel("Individuals", value=1, icon=icon("user")),
-                                            tabPanel("Households", value=2, icon=icon("users")),
+                                            tabPanel("Families", value=2, icon=icon("users")),
                                             widths=c(12,12),
                                             id='demog'
                                             )#,
@@ -196,7 +197,8 @@ shinyUI(fluidPage(
         tags$h5("Demographics"),
         fluidRow(
           column(7,
-                 plotOutput("mapplot", height=800, width = '90%')
+                 plotOutput("mapplot", height=800, width = '100%'),
+                 #tableOutput("table")
           ),
           column(5,
                  helpText('Demographics'),

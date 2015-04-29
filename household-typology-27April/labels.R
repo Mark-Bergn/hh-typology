@@ -154,6 +154,27 @@ percentlabels<- list('',
                      'Struggling to keep up',
                      'Falling behind')
 
+mapcolorshigh <- list('',
+                   '#238443',
+                   '#D7301F',
+                   '',
+                   '#006837',
+                   '#78C679',
+                   '#FC8D59',
+                   '#B30000',
+                   '',
+                   '#238443',
+                   '#D7301F',
+                   '',
+                   '',
+                   '#238443',
+                   '#D7301F',
+                   '',
+                   '#006837',
+                   '#78C679',
+                   '#FC8D59',
+                   '#B30000')
+
 billscclabels <- c('falling behind\non some',
                    'financial problems,\nfallen behind\nwith many',
                    'keeping up,\nconstant struggle',
@@ -167,6 +188,6 @@ savinglabels <- c('no -\ndefinitely not',
 
 mdsexplain1 <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, households placed closer together have more similar answers to'
 mdsexplain2 <- 'questions related to financial outlook.'
-mdsexplain <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, households placed closer together have more similar answers to questions related to financial attitude and outlook. The most informative questions are shown on the right panel.'
+mdsexplain <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, each circle represents a household and households placed closer together have more similar answers to questions related to financial attitude and outlook. The most informative questions are shown on the right panel.'
 #mdstitle <- 'Using a technique called multidimensional scaling, households are measured how close they are to each other based on the similarity'
 

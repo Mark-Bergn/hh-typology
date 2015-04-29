@@ -3,13 +3,18 @@ library(gridExtra)
 library(ggplot2)
 library(RColorBrewer)
 library(sp)
+library(gpclib)
+library(maptools)
+gpclibPermit()
 
 #Read data
 s2009 <- read.csv('s09.csv' , fileEncoding='latin1')
 s2010 <- read.csv('s10.csv' , fileEncoding='latin1')
 s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
+#Read map and fortify
 load('map.rdata')
+boe <- fortify(boe, region='NAME')
 
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
@@ -35,7 +40,8 @@ allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a",
             "xphsdf","billscc","uncert","fisc_impact5","saving11","hscntcr1","fisc11_act3") #2011
 
 #add in demographic vars
-allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual", "tenure_grp2")
+allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual","region")
+
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
   
@@ -72,6 +78,11 @@ shinyServer(function(input, output) {
       x <- cbind(dat()[,names(dat()) %in% allvar],'clust'=dat()[,'clust2'])
     else
       x <- cbind(dat()[,names(dat()) %in% allvar],'clust'=dat()[,'clust4'])
+  })
+  
+  #For chloropleth map, show only 2 clusters when 'All types' is selected
+  dataSubClust2 <- reactive({
+      x <- cbind(dataSub(),'clust2'=dat()[,'clust2'])
   })
   
   #remove don't know/refused/not applicable observations in financial variable
@@ -146,6 +157,7 @@ shinyServer(function(input, output) {
       histdata$weight[histdata$histclust==cluster] <- 1/(nrow(histdata[histdata$histclust==cluster,])/histdata[histdata$histclust==cluster,]$scalefactor)
       # histdata$weight <- 1/nrow(histdata) # actually equivalent to setting the same weight across all clusters!
       histdata[,finance] <- log(as.numeric(as.character(histdata[,finance])))
+      histdata$fmedian <- round(median(histdata[,finance]), 1)
       x <- histdata
     }
     return(x)
@@ -156,9 +168,9 @@ shinyServer(function(input, output) {
   })
   
   #print weights
-  histweight <- reactive({
-    x <- histodata()$weight
-  })
+  #histweight <- reactive({
+   # x <- histodata()$weight
+  #})
   
   #Turn financial variable numeric
   numFin <- reactive({
@@ -254,18 +266,18 @@ shinyServer(function(input, output) {
     x <- labelpercentcluster(cluster(),percentlabelSub())
   })
   
-  mdsexplainer <- function(year){
-    if(year=='2009')
-      x <- paste(mdsexplain1,'30',mdsexplain2,sep=' ')
-    else if(year=='2010')
-      x <- paste(mdsexplain1,'51',mdsexplain2,sep=' ')
-    else
-      paste(mdsexplain1,'34',mdsexplain2,sep=' ')
-  }
+  #mdsexplainer <- function(year){
+   # if(year=='2009')
+   #   x <- paste(mdsexplain1,'30',mdsexplain2,sep=' ')
+    #else if(year=='2010')
+    #  x <- paste(mdsexplain1,'51',mdsexplain2,sep=' ')
+    #else
+    #  paste(mdsexplain1,'34',mdsexplain2,sep=' ')
+  #}
   
-  mdsexplain <- reactive({
-    x <- mdsexplainer(input$year)
-  })
+  #mdsexplain <- reactive({
+   # x <- mdsexplainer(input$year)
+  #})
   ##############
   #Plot clusters
   ##############
@@ -292,7 +304,7 @@ shinyServer(function(input, output) {
     source('theme_mine.R')
     hh4 <- hh3 + theme_mine() + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
     hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
-    hh6 <- hh5 + xlab('First partition (arbitrary values)') + ylab('Second partition (arbitrary values)') #+ ggtitle(mdstitle)
+    hh6 <- hh5 + xlab('First partition (normalized values)') + ylab('Second partition (normalized values)') #+ ggtitle(mdstitle)
     print(hh6)
     
     #histogram density plot
@@ -301,10 +313,11 @@ shinyServer(function(input, output) {
     jj <- ggplot(data=histodata(), environment = environment())
     jj1 <- jj + geom_density(aes(x=histodata()[,input$finance], fill=factor(histodata()$histclust), weights=histodata()$weight),
                              colour='white',alpha=0.6)
+    jj2 <- jj1 #+ geom_vline(xintercept=histodata()$fmedian,colour='black')# + annotate("text",x=unique(histodata()$fmedian),y=-0.1,label=as.character(unique(histodata()$fmedian)))
     source('theme_histogram.R')
-    jj2 <- jj1 + scale_fill_manual(values=histcolourSub()) + theme_histogram() + scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
-    jj3 <- jj2 + ggtitle(histlabelTi()) + xlab(histlabelFin())
-    print(jj3, vp=vp)
+    jj3 <- jj2 + scale_fill_manual(values=histcolourSub()) + theme_histogram() + scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
+    jj4 <- jj3 + ggtitle(histlabelTi()) + xlab(histlabelFin())
+    print(jj4, vp=vp)
   })
   
   
@@ -509,32 +522,77 @@ shinyServer(function(input, output) {
   #########Plot Map##########
   ###########################
   
+  mapmaker <- function(name,data,cluster){
+    data$newregion <- data[,name]
+    #survey population percentages
+    dat <- data.table(data)
+    summarytot <- dat[,list('freq'=.N),by=list(newregion)]
+    summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
+    #always include 2-cluster percentages
+    summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
+    summaryclust2$percent <- 0
+    for (i in unique(summaryclust2$clust2)){
+      summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
+    }
+    summaryclust2$poppercent <- sapply(summaryclust2$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+    summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
+    #cluster percentages
+    summary <- dat[,list('freq'=.N),by=list(newregion,clust)]
+    summary$percent <- 0
+    for (i in unique(summary$clust)){
+      summary$percent[summary$clust==i] <- summary$freq[summary$clust==i]/sum(summary$freq[summary$clust==i])*100
+    }
+    summary$poppercent <- sapply(summary$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+    summary$diffpercent <- summary$percent-summary$poppercent
+    if(cluster==0)
+      x <- summaryclust2[summaryclust2$clust2==1,]
+    else
+      x <- summary[summary$clust==cluster,]
+    return(x)
+  }
   
-  output$mapplot  <- renderPlot({
-    plot(boe)
+  diffmap <- reactive({
+    x <- mapmaker('region',dataSubClust2(),cluster())
   })
   
+  #check table
+  #output$table <- renderTable({
+   # y <- diffmap()
+  #})
+  mapcolorSub <- reactive({
+    x <- mapcolorshigh[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
+  })
   
+  source('theme_map.R')
+  output$mapplot  <- renderPlot({
+    mm <- ggplot(data=diffmap(), environment=environment()) 
+    mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
+    if(cluster()==0)
+      mm2 <- mm1 +  scale_fill_gradient2("Percentage difference from survey population",high='#238443',low='#D7301F',mid='white')
+    else
+      mm2 <- mm1 + scale_fill_gradient("Percentage difference from survey population",high=mapcolorSub(),low='white')
+    mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3)
+    mm4 <- mm3 + scale_x_continuous(limits=c(-12,2))
+    print(mm4)
+    
+  })
+  
+  ############
+  #BAR CHARTS
+  ############
   demclust <- reactive({
     x <- clusterfactor(cluster(),dataSub())
   })
-  ###trying to remov non-applicables but haven't managed so far
-#   remove <- c("don't know","refused","not applicable")
-#   nkidsdataSub <- reactive({
-#     x <- dataSub()[!(dataSub()[,"nkids"] %in% remove),]
-#   })
-#   
-#   hhsdataSub <- reactive({
-#     x <- dataSub()[!(dataSub()[,"hhsize"] %in% remove),]
-#   })
   
   
   ##normal
   plot1 <- reactive({
     if(input$demog==1){
       x <- aggregator('age_grp', dataSub(), demclust(), cluster())
+      #    lab1  <- 'Age Groups (years)'
     }else{
-      x <- aggregator('hhsize', dataSub(),demclust(),cluster())
+      x <- aggregator('nkids',dataSub(),demclust(),cluster())
+      #  lab1  <- 'Number of Kids'
     }
   })
   # 'nkids'
@@ -543,7 +601,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       lab1  <- 'Age Groups (years)'
     }else{
-      lab1  <- 'Household Size'
+      lab1  <- 'Number of Kids'
     }
   })
   
@@ -552,7 +610,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       x <- aggregator('sex',dataSub(),demclust(),cluster())
     }else{ ##having an issue when using tenure
-      x <- aggregator('tenure_grp2',dataSub(),demclust(),cluster())
+      x <- aggregator('sex',dataSub(),demclust(),cluster())
     }
   })
   #'tenure'
@@ -571,7 +629,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       x <- aggregator('qual',dataSub(),demclust(),cluster())
     }else{
-      x <- aggregator('nkids',dataSub(),demclust(),cluster())
+      x <- aggregator('hhsize',dataSub(),demclust(),cluster())
     }
   })
   #'hhsize'
@@ -580,7 +638,7 @@ shinyServer(function(input, output) {
     if(input$demog==1){
       lab3  <- 'Qualifications'
     }else{
-      lab3  <- 'Number of Kids'
+      lab3  <- 'Household Size'
     }
   })
   
@@ -645,11 +703,10 @@ shinyServer(function(input, output) {
     jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle (plot4lab())
     
     
-    ##change the order of the plots here
     
-    alldemplot  <- grid.arrange(se6, ag6, jb6, qu6,
+    alldemplot  <- grid.arrange(ag6, se6, qu6, jb6,
                                 ncol=1,
-                                heights=c(2, 1.8, 2, 1.8) )
+                                heights=c(1.5, 1.8, 1.8, 1.8) )
     
     print(alldemplot)
   })
