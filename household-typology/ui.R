@@ -176,7 +176,7 @@ shinyUI(fluidPage(
                   helpText('Demographics')
            ),
            column(5,
-                  helpText('Demographics') 
+                  plotOutput("testplot", height=260, width='90%') 
            )
          ),      
         value=2
