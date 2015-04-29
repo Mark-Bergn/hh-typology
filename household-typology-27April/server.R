@@ -36,7 +36,6 @@ allvar <- c("mds1","mds2","fihhyr_a","dfihhyr_a","ustot_a",
 
 #add in demographic vars
 allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids", "jbstat", "qual", "tenure_grp2")
-
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
   
@@ -519,16 +518,23 @@ shinyServer(function(input, output) {
   demclust <- reactive({
     x <- clusterfactor(cluster(),dataSub())
   })
+  ###trying to remov non-applicables but haven't managed so far
+#   remove <- c("don't know","refused","not applicable")
+#   nkidsdataSub <- reactive({
+#     x <- dataSub()[!(dataSub()[,"nkids"] %in% remove),]
+#   })
+#   
+#   hhsdataSub <- reactive({
+#     x <- dataSub()[!(dataSub()[,"hhsize"] %in% remove),]
+#   })
   
   
   ##normal
   plot1 <- reactive({
     if(input$demog==1){
       x <- aggregator('age_grp', dataSub(), demclust(), cluster())
-      #    lab1  <- 'Age Groups (years)'
     }else{
-      x <- aggregator('hhsize',dataSub(),demclust(),cluster())
-      #  lab1  <- 'Number of Kids'
+      x <- aggregator('hhsize', dataSub(),demclust(),cluster())
     }
   })
   # 'nkids'
