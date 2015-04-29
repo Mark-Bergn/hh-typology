@@ -29,7 +29,7 @@ theme_map<- function(base_size = 18, base_family = "Helvetica") {
       legend.position	= c(0.2,0.8),
       panel.background  = element_blank(),
       panel.border      = element_blank(),
-      plot.background	= element_rect(fill='#BED5EE',size=0.5, colour="white"),	
+      plot.background	= element_rect(fill='grey90',size=0.5, colour="white"),	
       panel.grid.major  = element_blank(),
       panel.grid.minor  = element_blank(),
       plot.margin		= unit(c(0.5,0.5,0.5,0.5), "lines")

@@ -568,11 +568,11 @@ shinyServer(function(input, output) {
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
     if(cluster()==0)
-      mm2 <- mm1 +  scale_fill_gradient2("Percentage difference from survey population",high='#238443',low='#D7301F',mid='white')
+      mm2 <- mm1 +  scale_fill_gradient2("Percentage difference\nfrom survey population",high='#238443',low='#D7301F',mid='white',na.value = "black")
     else
-      mm2 <- mm1 + scale_fill_gradient("Percentage difference from survey population",high=mapcolorSub(),low='white')
-    mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3)
-    mm4 <- mm3 + scale_x_continuous(limits=c(-12,2))
+      mm2 <- mm1 + scale_fill_gradient("Percentage difference\nfrom survey population",high=mapcolorSub(),low='white',limits=c(0,max(diffmap()$diffpercent)))
+    mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3) 
+    mm4 <- mm3 + scale_x_continuous(limits=c(-10,2)) 
     print(mm4)
     
   })

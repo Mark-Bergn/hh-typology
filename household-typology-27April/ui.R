@@ -196,13 +196,14 @@ shinyUI(fluidPage(
       tabPanel(
         tags$h5("Demographics"),
         fluidRow(
-          column(7,
-                 plotOutput("mapplot", height=800, width = '100%')
+          column(6,offset=1,
+                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
+                 plotOutput("mapplot", height=600, width = '80%')
                  #tableOutput("table")
           ),
           column(5,
                  helpText('Demographics'),
-                 plotOutput("demplot", height=800, width = '90%')
+                 plotOutput("demplot", height=800, width = '95%')
                  )
           ),           
         value=2
