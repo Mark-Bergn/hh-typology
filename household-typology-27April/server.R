@@ -305,7 +305,8 @@ shinyServer(function(input, output) {
     hh4 <- hh3 + theme_mine() + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
     hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
     hh6 <- hh5 + xlab('First partition (normalized values)') + ylab('Second partition (normalized values)') #+ ggtitle(mdstitle)
-    print(hh6)
+    hh7 <- hh6 + guides(size = guide_legend(label.hjust=0.5))
+    print(hh7)
     
     #histogram density plot
     #make it an inset with viewport
@@ -439,7 +440,7 @@ shinyServer(function(input, output) {
       bb3 <- bb2 + geom_text(aes(x=billscc()$newname,y=billscc()$percentage,label=paste0(billscc()$percentage,'%'),group=factor(billscc()$newclust)),
                            position=position_dodge(width=1),vjust=0)
       bb4 <- bb3 + scale_fill_manual(name='Household type',values=colourSub()) + theme_attitude_upright()
-      bb5 <- bb4 + scale_x_discrete(labels=billscclabels) + scale_y_continuous(limits=c(0,90)) + guides(fill = guide_legend(nrow = 2))
+      bb5 <- bb4 + scale_x_discrete(labels=billscclabels) + scale_y_continuous(limits=c(0,max(billscc()$percentage)+5)) + guides(fill = guide_legend(nrow = 2))
       bb6 <- bb5 + xlab('') + ylab('percentage (%)') + ggtitle ('How are you keeping up with your credit commitments?')
     
       #xphsdf
@@ -449,7 +450,7 @@ shinyServer(function(input, output) {
       pp3 <- pp2 + geom_text(aes(x=xphsdf()$newname,y=xphsdf()$percentage,label=paste0(xphsdf()$percentage,'%'),group=factor(xphsdf()$newclust)),
                              position=position_dodge(width=1),hjust=0)
       pp4 <- pp3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
-      pp5 <- pp4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+      pp5 <- pp4 + scale_y_continuous(limits=c(0,max(xphsdf()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
       pp6 <- pp5 + xlab('') + ylab('percentage (%)') + ggtitle ('Difficulties in paying for accommodation')
       
       if(input$year=='2009' | input$year=='2010'){
@@ -460,7 +461,7 @@ shinyServer(function(input, output) {
         qq3 <- qq2 + geom_text(aes(x=hscntcr1()$newname,y=hscntcr1()$percentage,label=paste0(hscntcr1()$percentage,'%'),group=factor(hscntcr1()$newclust)),
                                position=position_dodge(width=1),hjust=0)
         qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
-        qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        qq5 <- qq4 + scale_y_continuous(limits=c(0,max(hscntcr1()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
         qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Putting off spending because of credit concerns')
         #hscntcr
         rr1 <- ggplot(data=hscntcr(), environment=environment())
@@ -469,7 +470,7 @@ shinyServer(function(input, output) {
         rr3 <- rr2 + geom_text(aes(x=hscntcr()$newname,y=hscntcr()$percentage,label=paste0(hscntcr()$percentage,'%'),group=factor(hscntcr()$newclust)),
                                position=position_dodge(width=1),hjust=0)
         rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(),guide=FALSE) + theme_attitude()
-        rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        rr5 <- rr4 + scale_y_continuous(limits=c(0,max(hscntcr()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
         rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Actual or perceived credit constraint')
         #saving
         ss1 <- ggplot(data=saving(), environment=environment())
@@ -478,7 +479,7 @@ shinyServer(function(input, output) {
         ss3 <- ss2 + geom_text(aes(x=saving()$newname,y=saving()$percentage,label=paste0(saving()$percentage,'%'),group=factor(saving()$newclust)),
                                position=position_dodge(width=1),vjust=0)
         ss4 <- ss3 + scale_fill_manual(name='Household type',values=colourSub(),guide=FALSE) + theme_attitude_upright()
-        ss5 <- ss4 + scale_x_discrete(labels=savinglabels) #+ scale_y_continuous(limits=c(0,80)) #+ guides(fill = guide_legend(nrow = 1))
+        ss5 <- ss4 + scale_x_discrete(labels=savinglabels) + scale_y_continuous(limits=c(0,max(saving()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
         ss6 <- ss5 + xlab('') + ylab('percentage (%)') + ggtitle ('Planning to increase the amount of savings')
       }
       else{
@@ -489,7 +490,7 @@ shinyServer(function(input, output) {
         qq3 <- qq2 + geom_text(aes(x=fisc_impact5()$newname,y=fisc_impact5()$percentage,label=paste0(fisc_impact5()$percentage,'%'),group=factor(fisc_impact5()$newclust)),
                                position=position_dodge(width=1),hjust=0)
         qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
-        qq5 <- qq4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        qq5 <- qq4 + scale_y_continuous(limits=c(0,max(fisc_impact5()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
         qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes due to govt budget measures')
         
         #fisc11_act3
@@ -499,7 +500,7 @@ shinyServer(function(input, output) {
         rr3 <- rr2 + geom_text(aes(x=fisc11_act3()$newname,y=fisc11_act3()$percentage,label=paste0(fisc11_act3()$percentage,'%'),group=factor(fisc11_act3()$newclust)),
                                position=position_dodge(width=1),hjust=0)
         rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
-        rr5 <- rr4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+        rr5 <- rr4 + scale_y_continuous(limits=c(0,max(fisc11_act3()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
         rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Responded to govt budget measures by looking for a new job')
         
         #uncert
@@ -509,7 +510,7 @@ shinyServer(function(input, output) {
         ss3 <- ss2 + geom_text(aes(x=uncert()$newname,y=uncert()$percentage,label=paste0(uncert()$percentage,'%'),group=factor(uncert()$newclust)),
                                position=position_dodge(width=1),vjust=0)
         ss4 <- ss3 + scale_fill_manual(name='Household type',values=colourSub(),guide=FALSE) + theme_attitude_upright()
-        ss5 <- ss4 #+ scale_x_discrete(labels=savinglabels) #+ scale_y_continuous(limits=c(0,80)) #+ guides(fill = guide_legend(nrow = 1))
+        ss5 <- ss4 + scale_y_continuous(limits=c(0,max(uncert()$percentage)+5))#+ scale_x_discrete(labels=savinglabels) #+ guides(fill = guide_legend(nrow = 1))
         ss6 <- ss5 + xlab('') + ylab('percentage (%)') + ggtitle ('Certainty in household income a year from now')
       }
       
@@ -518,6 +519,7 @@ shinyServer(function(input, output) {
                                 heights=c(1.8,1,1,1,1.8))
       print(allplot)
   })
+  
   ###########################
   #########Plot Map##########
   ###########################
@@ -568,11 +570,11 @@ shinyServer(function(input, output) {
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
     if(cluster()==0)
-      mm2 <- mm1 +  scale_fill_gradient2("Percentage difference\nfrom survey population",high='#238443',low='#D7301F',mid='white',na.value = "black")
+      mm2 <- mm1 +  scale_fill_gradient2("Percentage excess of\nSecure households\ncompared to survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
     else
-      mm2 <- mm1 + scale_fill_gradient("Percentage difference\nfrom survey population",high=mapcolorSub(),low='white',limits=c(0,max(diffmap()$diffpercent)))
+      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage excess of\n",percentlabelSub()," households\ncompared to survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
     mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3) 
-    mm4 <- mm3 + scale_x_continuous(limits=c(-10,2)) 
+    mm4 <- mm3 #+ scale_x_continuous(limits=c(-10,2)) 
     print(mm4)
     
   })
@@ -678,7 +680,7 @@ shinyServer(function(input, output) {
     ag3 <- ag2 + geom_text(aes(x=plot1()$newname,y=plot1()$percentage,label=paste0(plot1()$percentage,'%'),group=factor(plot1()$newclust)),
                            position=position_dodge(width=1),vjust=0)
     ag4 <- ag3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
-    ag5 <- ag4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
+    ag5 <- ag4 + scale_y_continuous(limits=c(0,max(plot1()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 2))
     ag6 <- ag5 + xlab('') + ylab('percentage (%)') + ggtitle (plot1lab())
     
     se1 <- ggplot(data=plot2(), environment=environment())
@@ -687,7 +689,7 @@ shinyServer(function(input, output) {
     se3 <- se2 + geom_text(aes(x=plot2()$newname,y=plot2()$percentage,label=paste0(plot2()$percentage,'%'),group=factor(plot2()$newclust)),
                            position=position_dodge(width=1),hjust=0)
     se4 <- se3 + scale_fill_manual(name='Household type',values=revcolourSub()) + theme_attitude()
-    se5 <- se4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+    se5 <- se4 + guides(fill = guide_legend(nrow = 2)) + scale_y_continuous(limits=c(0,max(plot2()$percentage)+5)) 
     se6 <- se5 + xlab('') + ylab('percentage (%)') + ggtitle (plot2lab())
     
     
@@ -698,7 +700,7 @@ shinyServer(function(input, output) {
     qu3 <- qu2 + geom_text(aes(x=plot3()$newname,y=plot3()$percentage,label=paste0(plot3()$percentage,'%'),group=factor(plot3()$newclust)),
                            position=position_dodge(width=1),vjust=0)
     qu4 <- qu3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
-    qu5 <- qu4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_(nrow = 2))
+    qu5 <- qu4 + scale_y_continuous(limits=c(0,max(plot3()$percentage)+5)) #+ guides(fill = guide_(nrow = 2))
     qu6 <- qu5 + xlab('') + ylab('percentage (%)') + ggtitle (plot3lab())
     
     
@@ -708,14 +710,14 @@ shinyServer(function(input, output) {
     jb3 <- jb2 + geom_text(aes(x=plot4()$newname,y=plot4()$percentage,label=paste0(plot4()$percentage,'%'),group=factor(plot4()$newclust)),
                            position=position_dodge(width=1),hjust=0)
     jb4 <- jb3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
-    jb5 <- jb4 + scale_y_continuous(limits=c(0,105)) #+ guides(fill = guide_legend(nrow = 1))
+    jb5 <- jb4 + scale_y_continuous(limits=c(0,max(plot4()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
     jb6 <- jb5 + xlab('') + ylab('percentage (%)') + ggtitle (plot4lab())
     
     
     
     alldemplot  <- grid.arrange(se6, ag6, jb6, qu6,
                                 ncol=1,
-                                heights=c(2, 1.8, 2, 1.8) )
+                                heights=c(2.5, 2.5, 2.5, 2.5) )
     
     print(alldemplot)
   })

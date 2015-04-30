@@ -2,9 +2,9 @@
 all_labels<- list(c('Secure','Struggling'),
                   c('Secure','Survey population'),
                   c('Struggling','Survey population'),
-                  c('Highly secure','Conservative and secure','Struggling but managing','Falling behind'),
+                  c('Highly secure','Conservative secure','Struggling but managing','Falling behind'),
                   c('Highly secure','Survey population'),
-                  c('Conservative and secure','Survey population'),
+                  c('Conservative secure','Survey population'),
                   c('Struggling but managing','Survey population'),
                   c('Falling behind','Survey population'),
                   c('Secure','Struggling'),
@@ -47,9 +47,9 @@ allcolours<- list(c('#238443','#D7301F'),
 revlabels<- list(c('Struggling','Secure'),
                  c('Survey population','Secure'),
                  c('Survey population','Struggling'),
-                 c('Falling behind','Struggling but managing','Conservative and secure','Highly secure'),
+                 c('Falling behind','Struggling but managing','Conservative secure','Highly secure'),
                  c('Survey population','Highly secure'),
-                 c('Survey population','Conservative and secure'),
+                 c('Survey population','Conservative secure'),
                  c('Survey population','Struggling but managing'),
                  c('Survey population','Falling behind'),
                  c('Struggling','Secure'),
@@ -138,8 +138,8 @@ percentlabels<- list('',
                      'Struggling',
                      '',
                      'Highly Secure',
-                     'Secure but worried',
-                     'Struggling to keep up',
+                     'Conservative secure',
+                     'Struggling but managing',
                      'Falling behind',
                      '',
                      'Secure',
@@ -186,8 +186,9 @@ savinglabels <- c('no -\ndefinitely not',
                   'yes -\nsignificant increase',
                   'yes -\nslightly increase')
 
-mdsexplain1 <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, households placed closer together have more similar answers to'
-mdsexplain2 <- 'questions related to financial outlook.'
+#mdsexplain1 <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, households placed closer together have more similar answers to'
+#mdsexplain2 <- 'questions related to financial outlook.'
 mdsexplain <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, each circle represents a household and households placed closer together have more similar answers to questions related to financial attitude and outlook. The most informative questions are shown on the right panel.'
+mdsexplain2 <- 'We can observe whether financial attitudes of households correspond to their actual financial position by sizing the circles according to variables such as income and debt. These can be selected at the rightmost navigation panel.'
 #mdstitle <- 'Using a technique called multidimensional scaling, households are measured how close they are to each other based on the similarity'
 

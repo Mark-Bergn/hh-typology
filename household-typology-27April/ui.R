@@ -14,6 +14,9 @@ source('labels.R')
 
 shinyUI(fluidPage(
   
+  list(tags$head(HTML('<link rel="icon", href="bankofengland60.jpg", 
+                                   type="image/jpg" />'))),
+  titlePanel("", windowTitle = "Household types in the Bank of England survey"),
   # Application title
   headerPanel(fluidRow(
     column(1,
@@ -22,7 +25,7 @@ shinyUI(fluidPage(
            )
            ),
     column(11,
-           tags$h1("Financial attitudes in UK households: the Bank of England survey")
+           tags$h1("Financial attitudes of UK households: the Bank of England survey")
            )
   )
   ),
@@ -179,7 +182,7 @@ shinyUI(fluidPage(
         tags$h5("Financial position and attitudes"),
         fluidRow(
           column(7,
-                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
+                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")), 
                  #textOutput("explain",
                   #          tags$h4(tags$style("#explain{
                    #                            font-style:italic;line-height:150%;color:black;
@@ -196,13 +199,14 @@ shinyUI(fluidPage(
       tabPanel(
         tags$h5("Demographics"),
         fluidRow(
-          column(6,offset=1,
+          column(7,
+                 #offset=1,
                  helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
-                 plotOutput("mapplot", height=600, width = '80%')
+                 plotOutput("mapplot", height=600, width = '90%')
                  #tableOutput("table")
           ),
           column(5,
-                 helpText('Demographics'),
+                 #helpText('Demographics'),
                  plotOutput("demplot", height=800, width = '95%')
                  )
           ),           
