@@ -588,10 +588,14 @@ shinyServer(function(input, output) {
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
     if(cluster()==0)
-      mm2 <- mm1 +  scale_fill_gradient2("Percentage(%) excess of\nSecure households\ncompared to survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
+      mm2 <- mm1 +  scale_fill_gradient2("Percentage(%) excess of\nSecure households\nover survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
     else
-      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage(%) excess of\n",percentlabelSub()," households\ncompared to survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
-    mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3) 
+      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage(%) excess of\n",percentlabelSub()," households\nover survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
+    mm3 <- mm2 + theme_map() + geom_text(aes(x=-10,y=53.5,
+                                         label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
+                                         data=data.frame(),
+                                         size=5,fontface='italic',hjust=0,colour="grey30")
+                                         #+ coord_fixed(ratio = 3) 
     mm4 <- mm3 #+ scale_x_continuous(limits=c(-10,2)) 
     print(mm4)
     
