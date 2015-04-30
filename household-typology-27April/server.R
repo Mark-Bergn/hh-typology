@@ -157,7 +157,7 @@ shinyServer(function(input, output) {
       histdata$weight[histdata$histclust==cluster] <- 1/(nrow(histdata[histdata$histclust==cluster,])/histdata[histdata$histclust==cluster,]$scalefactor)
       # histdata$weight <- 1/nrow(histdata) # actually equivalent to setting the same weight across all clusters!
       histdata[,finance] <- log(as.numeric(as.character(histdata[,finance])))
-      histdata$fmedian <- round(median(histdata[,finance]), 1)
+      histdata$fmed <- round(median(histdata[,finance], na.rm=T), 1)
       x <- histdata
     }
     return(x)
@@ -165,6 +165,18 @@ shinyServer(function(input, output) {
   
   histodata <- reactive({
     x <- histomaker(cluster(),newdataSub(),input$finance)
+  })
+  
+  histomedianfinder <- function(data,cluster,finance){
+    if(cluster==0)
+      x <- data[,finance]
+    else
+      x <- data[data$histclust==cluster,finance]
+    return(x)
+  }
+  
+  histomedian <- reactive({
+    x <- histomedianfinder(histodata(),cluster(),input$finance)
   })
   
   #print weights
@@ -266,6 +278,7 @@ shinyServer(function(input, output) {
     x <- labelpercentcluster(cluster(),percentlabelSub())
   })
   
+  
   #mdsexplainer <- function(year){
    # if(year=='2009')
    #   x <- paste(mdsexplain1,'30',mdsexplain2,sep=' ')
@@ -284,8 +297,8 @@ shinyServer(function(input, output) {
   
   #Test whether variables are as expected
   #output$clust <- renderText(y <- histweight())
-  output$explain <- renderText(y <- mdsexplain())
-  #output$finance <- renderText(y <- labelFin())
+  #output$explain <- renderText(y <- mdsexplain())
+  #output$histo <- renderText(y <- histodata()$fmed)
   
   #MDS plot
   output$mdsplot <- renderPlot({
@@ -301,8 +314,11 @@ shinyServer(function(input, output) {
     hh3 <- hh2 + geom_text(aes(x=percentlabelx(),y=percentlabely(),label=percentlabelValue()),
                            data = data.frame(), #impt! to prevent overplotting
                            size=5, colour=percentcolourSub(), alpha=0.9, hjust=0.2)
+    #hh4 <- hh3 + geom_text(aes(x=legendlabelx(), y=legendlabely(),label=legendlabelValue()),
+     #                      data = data.frame(),
+      #                     size=5, colour='black')
     source('theme_mine.R')
-    hh4 <- hh3 + theme_mine() + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
+    hh4 <- hh3 + theme_mine(finance=input$finance) + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
     hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
     hh6 <- hh5 + xlab('First partition (normalized values)') + ylab('Second partition (normalized values)') #+ ggtitle(mdstitle)
     hh7 <- hh6 + guides(size = guide_legend(label.hjust=0.5))
@@ -314,7 +330,9 @@ shinyServer(function(input, output) {
     jj <- ggplot(data=histodata(), environment = environment())
     jj1 <- jj + geom_density(aes(x=histodata()[,input$finance], fill=factor(histodata()$histclust), weights=histodata()$weight),
                              colour='white',alpha=0.6)
-    jj2 <- jj1 #+ geom_vline(xintercept=histodata()$fmedian,colour='black')# + annotate("text",x=unique(histodata()$fmedian),y=-0.1,label=as.character(unique(histodata()$fmedian)))
+    jj2 <- jj1 + geom_vline(xintercept=median(histomedian(),na.rm=T),colour='white') + annotate("text",x=median(histomedian(),na.rm=T)+0.5,
+                                                                                                y=0.18,
+                                                                                                label=paste0('median:',round(median(histomedian(),na.rm=T),1)))
     source('theme_histogram.R')
     jj3 <- jj2 + scale_fill_manual(values=histcolourSub()) + theme_histogram() + scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
     jj4 <- jj3 + ggtitle(histlabelTi()) + xlab(histlabelFin())
@@ -570,9 +588,9 @@ shinyServer(function(input, output) {
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
     if(cluster()==0)
-      mm2 <- mm1 +  scale_fill_gradient2("Percentage excess of\nSecure households\ncompared to survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
+      mm2 <- mm1 +  scale_fill_gradient2("Percentage(%) excess of\nSecure households\ncompared to survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
     else
-      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage excess of\n",percentlabelSub()," households\ncompared to survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
+      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage(%) excess of\n",percentlabelSub()," households\ncompared to survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
     mm3 <- mm2 + theme_map() #+ coord_fixed(ratio = 3) 
     mm4 <- mm3 #+ scale_x_continuous(limits=c(-10,2)) 
     print(mm4)

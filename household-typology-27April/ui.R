@@ -188,7 +188,8 @@ shinyUI(fluidPage(
                    #                            font-style:italic;line-height:150%;color:black;
                    #                            }"))
                     #        ),
-                 plotOutput("mdsplot", height="800px")#, textOutput("clust")
+                 plotOutput("mdsplot", height="800px")#, #textOutput("clust")
+                 #textOutput("histo")
                  ),
           column(5,
                  plotOutput("attplot", height="1000px", width='95%'), tableOutput("summary") #textOutput("finance"),
@@ -201,7 +202,7 @@ shinyUI(fluidPage(
         fluidRow(
           column(7,
                  #offset=1,
-                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")),
+                 helpText(tags$h4(demogexplain, style="font-style:italic;line-height:150%;color:black;")),
                  plotOutput("mapplot", height=600, width = '90%')
                  #tableOutput("table")
           ),

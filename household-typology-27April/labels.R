@@ -186,9 +186,9 @@ savinglabels <- c('no -\ndefinitely not',
                   'yes -\nsignificant increase',
                   'yes -\nslightly increase')
 
-#mdsexplain1 <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, households placed closer together have more similar answers to'
-#mdsexplain2 <- 'questions related to financial outlook.'
+
 mdsexplain <- 'We used a technique called Multidimensional Scaling to group households together based on responses to survey questions. On this plot, each circle represents a household and households placed closer together have more similar answers to questions related to financial attitude and outlook. The most informative questions are shown on the right panel.'
 mdsexplain2 <- 'We can observe whether financial attitudes of households correspond to their actual financial position by sizing the circles according to variables such as income and debt. These can be selected at the rightmost navigation panel.'
+demogexplain <- "We can observe what kinds of households define each type by corresponding to their socio-demographic characteristics. The map shows which UK regions the household type is overrepresented compared to the survey population, while the right panel displays attributes according to individual or household status."
 #mdstitle <- 'Using a technique called multidimensional scaling, households are measured how close they are to each other based on the similarity'
 

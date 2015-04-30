@@ -1,4 +1,14 @@
-theme_mine <- function(base_size = 18, base_family = "Helvetica") {
+legendpos <- function(finance){
+  if(finance=="fihhyr_a")
+    x <- c(0.1,0.8)
+  else if(finance=="dfihhyr_a")
+    x <- c(0.15,0.8)
+  else
+    x <- c(0.15,0.8)
+}
+ 
+
+theme_mine <- function(base_size = 18, base_family = "Helvetica",finance) {
   # Starts with theme_grey and then modify some parts
   theme_grey(base_size = base_size, base_family = base_family) %+replace%
     theme(
@@ -23,10 +33,11 @@ theme_mine <- function(base_size = 18, base_family = "Helvetica") {
       legend.key        = element_blank(),
       legend.background = element_blank(),
       legend.key.size	= unit(1.0, "lines"),
+      #legend.text = element_blank(),
       legend.text		= element_text(size= rel(0.8)),
       legend.title		= element_text(size= rel(0.8), face="bold"),
       #legend.title		= element_blank(),
-      legend.position	= 'top',
+      legend.position	= legendpos(finance),
       panel.background  = element_blank(),
       panel.border      = element_blank(),
       plot.background	= element_blank(),	
