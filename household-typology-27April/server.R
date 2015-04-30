@@ -16,6 +16,12 @@ s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 load('map.rdata')
 boe <- fortify(boe, region='NAME')
 load('mapcenters.rdata')
+##these can be removed and done outside of the server
+# region_centers$cent_y[region_centers$NAME=="North West"]  <- 54.5
+# region_centers$cent_x[region_centers$NAME=="North West"]  <- -2.8
+# region_centers$cent_y[region_centers$NAME=="South East"]  <- 51.2
+# region_centers$cent_x[region_centers$NAME=="South East"] <- -0.9
+
 
 #remove outlier in MDS plot
 s2010 <- s2010[rownames(s2010)!=302,]
@@ -598,7 +604,7 @@ shinyServer(function(input, output) {
                                          size=5,fontface='italic',hjust=0,colour="grey30")
                                          #+ coord_fixed(ratio = 3) 
     mm4 <- mm3 + geom_text(x=region_centers$cent_x, y=region_centers$cent_y, 
-                         label=region_centers$NAME, col="grey")#+ scale_x_continuous(limits=c(-10,2)) 
+                         label=region_centers$NAME, col="white")#+ scale_x_continuous(limits=c(-10,2)) 
     print(mm4)
     
   })

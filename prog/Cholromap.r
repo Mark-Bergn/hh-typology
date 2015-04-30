@@ -1,5 +1,5 @@
 setwd("./data")
-setwd("./projects/hh-typology/data")
+setwd("../projects/hh-typology/data")
 #rm(list=setdiff(ls(), "boe"))
 load("boe.rdata")
 
@@ -45,6 +45,12 @@ region_centers$y  <- NULL
 levels(regions_centers$NAME)  <-  c("East Anglia", "East Midlands", "London", "North East",
                         "North West", "South East", "South West", "West Midlands", "Yorkshire & Humber",
                         "Scotland", "Wales" )
+
+##these can be removed and done outside of the server
+region_centers$cent_y[region_centers$NAME=="North West"]  <- 54.5
+region_centers$cent_x[region_centers$NAME=="North West"]  <- -2.8
+region_centers$cent_y[region_centers$NAME=="South East"]  <- 51.2
+region_centers$cent_x[region_centers$NAME=="South East"] <- -0.9
 
 # save the data slot
 subdat_data<-boe@data
