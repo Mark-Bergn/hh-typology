@@ -6,7 +6,7 @@ theme_attitude <- function(base_size = 18, base_family = "Helvetica") {
       axis.line 		= element_blank(),
       #axis.line.y		= element_line(size=0.5, colour="grey70"),
       #axis.line.x		= element_blank(),
-      plot.title		= element_text(size = rel(0.7), colour="black", face="bold", hjust=0),
+      plot.title		= element_text(size = rel(0.8), colour="black", face="bold", hjust=0),
       #strip.text.x 		= element_text(size=18, colour="black", face= "bold"),
       #strip.text.y 		= element_text(size=18, face="bold", angle=90),
       #strip.background 	= element_rect(colour="white", fill="#CCCCCC"),

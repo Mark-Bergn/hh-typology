@@ -529,7 +529,7 @@ shinyServer(function(input, output) {
                                position=position_dodge(width=1),hjust=0)
         qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
         qq5 <- qq4 + scale_y_continuous(limits=c(0,max(fisc_impact5()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
-        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes\ndue to govt budget measures')
+        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes due to government budget measures')
         
         #fisc11_act3
         rr1 <- ggplot(data=fisc11_act3(), environment=environment())
@@ -539,7 +539,7 @@ shinyServer(function(input, output) {
                                position=position_dodge(width=1),hjust=0)
         rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
         rr5 <- rr4 + scale_y_continuous(limits=c(0,max(fisc11_act3()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
-        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Looking for a new job\ndue to govt budget measures')
+        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Looking for a new job due to government budget measures')
         
         #uncert
         ss1 <- ggplot(data=uncert(), environment=environment())
@@ -631,7 +631,7 @@ shinyServer(function(input, output) {
     mm2 <- mm1 + geom_text(aes(x=diffmap()$cent_x, y=diffmap()$cent_y, 
                                label=diffmap()$NAME),
                            data=data.frame(),
-                           col="black", size=5, family="Palatino",fontface="italic")
+                           col="black", size=5)#family="Palatino",fontface="italic")
     if(cluster()==0){
       mm3 <- mm2 + theme_map() + scale_fill_gradient2("Percentage (%) excess of\nSecure households",
                                                       high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")

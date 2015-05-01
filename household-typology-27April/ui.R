@@ -16,7 +16,7 @@ shinyUI(fluidPage(
   
   list(tags$head(HTML('<link rel="icon", href="bankofengland60.jpg", 
                                    type="image/jpg" />'))),
-  titlePanel("", windowTitle = "Financial attitudes in UK households"),
+  titlePanel("", windowTitle = "Bank of England household survey"),
   # Application title
   headerPanel(fluidRow(
     column(1,
@@ -25,7 +25,7 @@ shinyUI(fluidPage(
            )
            ),
     column(11,
-           tags$h1("Financial attitudes in UK households: the Bank of England survey")
+           tags$h1("Bank of England household survey - UK financial attitudes")
            )
   )
   ),
@@ -33,12 +33,12 @@ shinyUI(fluidPage(
   # Sidebar with controls to select a dataset
   fluidRow(
     column(4,
-           wellPanel(radioButtons("year", label=h5("Select a year of the Bank of England household survey"),
+           wellPanel(radioButtons("year", label=h4("Select a year of the Bank of England household survey"),
                                  choices=c("2011","2010","2009"), selected = "2011"),
                      #h5("Select the number of household typologies"),
                      #actionButton("clusttwo", label=h2("2")),
                      #actionButton("clustfour", label=h2("4")),
-                     radioButtons("clustnum", label=tags$h5("Households can be partitioned into different groups based on financial attitudes. What is the level of partition that you wish to see?",
+                     radioButtons("clustnum", label=tags$h4("Households can be partitioned into different groups based on financial attitudes. What is the level of partition that you wish to see?",
                                                             style="line-height=110%;"),
                                   choices=c("Broad","Detailed"), selected="Broad"),
                      style = "padding: 20px;"
@@ -182,19 +182,17 @@ shinyUI(fluidPage(
         tags$h5("Financial position and attitudes"),
         fluidRow(
           column(7,
-                 helpText(tags$h4(mdsexplain, style="font-style:italic;line-height:150%;color:black;")), 
-                 #textOutput("explain",
-                  #          tags$h4(tags$style("#explain{
-                   #                            font-style:italic;line-height:150%;color:black;
-                   #                            }"))
-                    #        ),
+                 helpText(tags$h4('We used a technique called',
+                                  a('Multidimensional Scaling', href="http://en.wikipedia.org/wiki/Multidimensional_scaling", target="_blank"),
+                                  mdsexplain, style="line-height:150%;color:black;")), 
                  plotOutput("mdsplot", height="700px"), #textOutput("clust")
-                 textOutput("mdstext"),
-                 tags$head(tags$style("#mdstext{color: black;
-                                 font-size: 15px;
-                                 font-style: italic;
-                                  line-height:120%;
-                                 }"))
+                 helpText(tags$h4(mdsexplain2, style="line-height:150%;color:black;"))
+                 #textOutput("mdstext"),
+                 #tags$head(tags$style("#mdstext{color: black;
+                                 #font-size: 15px;
+                                 #font-style: italic;
+                                  #line-height:120%;
+                                 #}"))
                  ),
           column(5,
                  plotOutput("attplot", height="900px", width='95%'), tableOutput("summary") #textOutput("finance"),
@@ -206,8 +204,7 @@ shinyUI(fluidPage(
         tags$h5("Demographics"),
         fluidRow(
           column(7,
-                 #offset=1,
-                 helpText(tags$h4(demogexplain, style="font-style:italic;line-height:150%;color:black;")),
+                 helpText(tags$h4(demogexplain, style="line-height:150%;color:black;")),
                  plotOutput("mapplot", height=600, width = '90%')
                  #tableOutput("table")
           ),
