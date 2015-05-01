@@ -206,6 +206,10 @@ savinglabels <- c('no -\ndefinitely not',
                   'yes -\nsignificant increase',
                   'yes -\nslightly increase')
 
+quallabels <- c('None',
+                'Other\nqualifications',
+                'Less than\nBachelors',
+                'Bachelors\nand above')
 
 #mdsexplain <- 'We used a technique called' 
 mdsexplain <- 'to group households together based on responses to survey questions. Each circle below represents a household. Circles placed closer together have similar answers to survey questions on financial attitude and outlook. The most informative questions are shown on the right panel.'

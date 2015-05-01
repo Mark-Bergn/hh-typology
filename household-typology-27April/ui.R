@@ -187,7 +187,7 @@ shinyUI(fluidPage(
                                   mdsexplain, style="line-height:150%;color:black;")), 
                  plotOutput("mdsplot", height="700px"), #textOutput("clust")
                  helpText(tags$h4(mdsexplain2, style="line-height:150%;color:black;"))
-                 #textOutput("mdstext"),
+                 #tableOutput("summary")
                  #tags$head(tags$style("#mdstext{color: black;
                                  #font-size: 15px;
                                  #font-style: italic;

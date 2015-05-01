@@ -373,6 +373,7 @@ shinyServer(function(input, output) {
       }
       if(cluster==0){
         summary$newclust<-sapply(summary$newclust, function(y) {if(y==1) z<-8 else if(y==2) z<-7 else if(y==3) z<-6 else z<-5})
+        summary <- summary[!(summary$newname %in% 'not applicable'),]
         x <- summary
       }
         
@@ -386,6 +387,7 @@ shinyServer(function(input, output) {
                             'freq'=summarytot$freq,
                             'percentage'=summarytot$percentage)
         summaryfinal <- rbind(summary,summarytot2)
+        summaryfinal <- summaryfinal[!(summaryfinal$newname %in% 'not applicable'),]
         x <- summaryfinal[summaryfinal$newclust %in% c(cluster,total),]
         #x <- summaryfinal
       }
@@ -404,6 +406,7 @@ shinyServer(function(input, output) {
     }
     if(cluster==0){
       #summary$newclust<-sapply(summary$newclust, function(y) {if(y==1) z<-8 else if(y==2) z<-7 else if(y==3) z<-6 else z<-5})
+      summary <- summary[!(summary$newname %in% 'not applicable'),]
       x <- summary
     }
     
@@ -417,6 +420,7 @@ shinyServer(function(input, output) {
                            'freq'=summarytot$freq,
                            'percentage'=summarytot$percentage)
       summaryfinal <- rbind(summary,summarytot2)
+      summaryfinal <- summaryfinal[!(summaryfinal$newname %in% 'not applicable'),]
       x <- summaryfinal[summaryfinal$newclust %in% c(cluster,total),]
       #x <- summaryfinal
     }
@@ -463,7 +467,7 @@ shinyServer(function(input, output) {
   #}
     
   #show table
-  #output$summary <- renderTable({ y <- hscntcr()})
+  #output$summary <- renderTable({ y <- uncert()})
   
   source('theme_attitude.R')
   source('theme_attitude_upright.R')
@@ -634,13 +638,18 @@ shinyServer(function(input, output) {
                            col="black", size=5)#family="Palatino",fontface="italic")
     if(cluster()==0){
       mm3 <- mm2 + theme_map() + scale_fill_gradient2("Percentage (%) excess of\nSecure households",
-                                                      high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
+                                                      high='#238443',low='#D7301F',mid='#FFFFBF',limits=c(-2.5,2.5))
      
       final <- mm3
     }
     else{
-      mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
-                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
+      if(cluster()==4 & input$year=='2009')
+        mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
+                                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,13))#max(diffmap()$diffpercent)))
+      else
+        mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
+                                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,6.5))
+      
       mm4 <- mm3 + geom_text(aes(x=-8,y=52,
                                  label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
                              data=data.frame(),
@@ -783,8 +792,12 @@ shinyServer(function(input, output) {
     
     
     qu1 <- ggplot(data=plot3(), environment=environment())
-    qu2 <- qu1 + geom_bar(aes(x=plot3()$newname,y=plot3()$percentage,fill=factor(plot3()$newclust, labels=labelSub())),
-                          stat='identity',position='dodge', alpha=0.6) #+ coord_flip()
+    if(input$demog==1)
+      qu2 <- qu1 + geom_bar(aes(x=plot3()$newname,y=plot3()$percentage,fill=factor(plot3()$newclust, labels=labelSub())),
+                            stat='identity',position='dodge', alpha=0.6) + scale_x_discrete(labels=quallabels)
+    else
+      qu2 <- qu1 + geom_bar(aes(x=plot3()$newname,y=plot3()$percentage,fill=factor(plot3()$newclust, labels=labelSub())),
+                            stat='identity',position='dodge', alpha=0.6) #+ coord_flip()    
     qu3 <- qu2 + geom_text(aes(x=plot3()$newname,y=plot3()$percentage,label=paste0(plot3()$percentage,'%'),group=factor(plot3()$newclust)),
                            position=position_dodge(width=1),vjust=0)
     qu4 <- qu3 + scale_fill_manual(name='Household type',values=colourSub(), guide=FALSE) + theme_attitude_upright()
