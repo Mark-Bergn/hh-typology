@@ -12,7 +12,7 @@ widget_style <-
 
 source('labels.R')
 
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme = "boottheme.css",
   
   list(tags$head(HTML('<link rel="icon", href="bankofengland60.jpg", 
                                    type="image/jpg" />'))),

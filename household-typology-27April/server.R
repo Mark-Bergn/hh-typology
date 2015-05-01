@@ -12,6 +12,10 @@ s2009 <- read.csv('s09.csv' , fileEncoding='latin1')
 s2010 <- read.csv('s10.csv' , fileEncoding='latin1')
 s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
+placenames  <- c("East Anglia", "East Midlands",  "London", "North East",
+                       "North West", "Scotland", "South East",
+                       "South West", "West Midlands", "Wales",  "Yorkshire & Humber")
+
 #Read map and fortify
 load('map.rdata')
 boe <- fortify(boe, region='NAME')
@@ -633,7 +637,7 @@ shinyServer(function(input, output) {
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
     mm2 <- mm1 + geom_text(aes(x=diffmap()$cent_x, y=diffmap()$cent_y, 
-                               label=diffmap()$NAME),
+                               label=placenames),
                            data=data.frame(),
                            col="black", size=5)#family="Palatino",fontface="italic")
     if(cluster()==0){
