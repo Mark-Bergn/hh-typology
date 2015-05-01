@@ -200,7 +200,7 @@ shinyServer(function(input, output) {
    # x <- as.numeric(as.character(histodata()[,input$finance]))
   #})
   
-  #Financial label
+  #Financial label title
   financelabeller <- function(finance){
     if (finance=='fihhyr_a')
       y <- 'Income in GBP'
@@ -213,6 +213,28 @@ shinyServer(function(input, output) {
   
   labelFin <- reactive({
     x <- financelabeller(input$finance)
+  })
+  
+  #Financial label text
+  financetextlabeller <- function(finance){
+    x <- list()
+    if (finance=='fihhyr_a'){
+      x$breaks <- seq(25e3,125e3,by=25e3)
+      x$labels <- paste0(as.character(x$breaks/1e3),'k')
+    }
+    else if(finance=='dfihhyr_a'){
+      x$breaks <- seq(1e3,6e3,by=1e3)
+      x$labels <- paste0(as.character(x$breaks/1e3),'k')
+    }
+    else{
+      x$breaks <- seq(10e3,40e3,by=10e3)
+      x$labels <- paste0(as.character(x$breaks/1e3),'k')
+    }
+    return(x)
+  }
+  
+  labeltextFin <- reactive({
+    x <- financetextlabeller(input$finance)
   })
   
   #Financial label for histogram
@@ -267,7 +289,7 @@ shinyServer(function(input, output) {
   
   #Get x and y for percent label
   percentlabelx <- reactive({
-    x <- min(newdataSub()$mds1) + 0.81*(max(newdataSub()$mds1)-min(newdataSub()$mds1))
+    x <- min(newdataSub()$mds1) + 0.78*(max(newdataSub()$mds1)-min(newdataSub()$mds1))
   })
   
   percentlabely <- reactive({
@@ -286,24 +308,12 @@ shinyServer(function(input, output) {
   })
   
   
-  #mdsexplainer <- function(year){
-   # if(year=='2009')
-   #   x <- paste(mdsexplain1,'30',mdsexplain2,sep=' ')
-    #else if(year=='2010')
-    #  x <- paste(mdsexplain1,'51',mdsexplain2,sep=' ')
-    #else
-    #  paste(mdsexplain1,'34',mdsexplain2,sep=' ')
-  #}
-  
-  #mdsexplain <- reactive({
-   # x <- mdsexplainer(input$year)
-  #})
   ##############
   #Plot clusters
   ##############
   
   #Test whether variables are as expected
-  #output$clust <- renderText(y <- histweight())
+  output$mdstext <- renderText(y <- mdsexplain2)
   #output$explain <- renderText(y <- mdsexplain())
   #output$histo <- renderText(y <- histodata()$fmed)
   
@@ -326,9 +336,12 @@ shinyServer(function(input, output) {
       #                     size=5, colour='black')
     source('theme_mine.R')
     hh4 <- hh3 + theme_mine(finance=input$finance) + geom_hline(yintercept=0,colour="grey70") + geom_vline(xintercept=0, colour="grey70")
-    hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25))
+    hh5 <- hh4 + scale_colour_manual('name'='Household type',values=colourSub(),guide=F) + scale_size_continuous(name=labelFin(),range = c(5,25),
+                                                                                                                 guide=guide_legend(label.position="bottom",label.hjust=0.5),
+                                                                                                                 breaks=labeltextFin()$breaks,
+                                                                                                                 labels=labeltextFin()$labels)
     hh6 <- hh5 + xlab('First partition (normalized values)') + ylab('Second partition (normalized values)') #+ ggtitle(mdstitle)
-    hh7 <- hh6 + guides(size = guide_legend(label.hjust=0.5))
+    hh7 <- hh6 
     print(hh7)
     
     #histogram density plot
@@ -516,7 +529,7 @@ shinyServer(function(input, output) {
                                position=position_dodge(width=1),hjust=0)
         qq4 <- qq3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
         qq5 <- qq4 + scale_y_continuous(limits=c(0,max(fisc_impact5()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
-        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes due to govt budget measures')
+        qq6 <- qq5 + xlab('') + ylab('percentage (%)') + ggtitle ('Perceived higher taxes\ndue to govt budget measures')
         
         #fisc11_act3
         rr1 <- ggplot(data=fisc11_act3(), environment=environment())
@@ -526,7 +539,7 @@ shinyServer(function(input, output) {
                                position=position_dodge(width=1),hjust=0)
         rr4 <- rr3 + scale_fill_manual(name='Household type',values=revcolourSub(), guide=FALSE) + theme_attitude()
         rr5 <- rr4 + scale_y_continuous(limits=c(0,max(fisc11_act3()$percentage)+5)) #+ guides(fill = guide_legend(nrow = 1))
-        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Responded to govt budget measures by looking for a new job')
+        rr6 <- rr5 + xlab('') + ylab('percentage (%)') + ggtitle ('Looking for a new job\ndue to govt budget measures')
         
         #uncert
         ss1 <- ggplot(data=uncert(), environment=environment())
@@ -549,13 +562,13 @@ shinyServer(function(input, output) {
   #########Plot Map##########
   ###########################
   
-  mapmaker <- function(name,data,cluster){
+  mapmaker <- function(name,data,cluster,year,centroids){
     data$newregion <- data[,name]
     #survey population percentages
     dat <- data.table(data)
     summarytot <- dat[,list('freq'=.N),by=list(newregion)]
     summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
-    #always include 2-cluster percentages
+    #Show 2-cluster percentages as default for 'All types' selection
     summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
     summaryclust2$percent <- 0
     for (i in unique(summaryclust2$clust2)){
@@ -565,6 +578,11 @@ shinyServer(function(input, output) {
     summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
     #cluster percentages
     summary <- dat[,list('freq'=.N),by=list(newregion,clust)]
+    #add missing E Anglia in 2009 Falling behind
+    if(year=='2009' & cluster==4){ 
+      summary <- rbind(data.frame(summary),data.frame('newregion'='E Anglia','clust'=4,'freq'=0))
+      summary$newregion <- as.factor(summary$newregion)
+    }   
     summary$percent <- 0
     for (i in unique(summary$clust)){
       summary$percent[summary$clust==i] <- summary$freq[summary$clust==i]/sum(summary$freq[summary$clust==i])*100
@@ -575,17 +593,33 @@ shinyServer(function(input, output) {
       x <- summaryclust2[summaryclust2$clust2==1,]
     else
       x <- summary[summary$clust==cluster,]
+    # merge with centroids data to check
+    x$NAME <- x$newregion
+    x <- merge(x,centroids,by ='NAME')
     return(x)
   }
   
   diffmap <- reactive({
-    x <- mapmaker('region',dataSubClust2(),cluster())
+    x <- mapmaker('region',dataSubClust2(),cluster(),input$year,region_centers)
+  })
+  
+  #get maximum diffpercent and region for blurb
+  
+  blurbmaker <- function(data){
+    x <- list()
+    x$percent <- round(max(data$diffpercent),1)
+    x$region <- as.character(data[data$diffpercent==max(data$diffpercent),]$NAME)
+    return(x)
+  }
+  
+  blurbmap <-reactive({
+    x <- blurbmaker(diffmap())
   })
   
   #check table
-  #output$table <- renderTable({
-   # y <- diffmap()
-  #})
+  output$table <- renderTable({
+    y <- diffmap()
+  })
   mapcolorSub <- reactive({
     x <- mapcolorshigh[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
   })
@@ -594,19 +628,43 @@ shinyServer(function(input, output) {
   output$mapplot  <- renderPlot({
     mm <- ggplot(data=diffmap(), environment=environment()) 
     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
-    if(cluster()==0)
-      mm2 <- mm1 +  scale_fill_gradient2("Percentage(%) excess of\nSecure households\nover survey population",high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
-    else
-      mm2 <- mm1 + scale_fill_gradient(name=paste0("Percentage(%) excess of\n",percentlabelSub()," households\nover survey population"),high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
-    mm3 <- mm2 + theme_map() + geom_text(aes(x=-10,y=53.5,
-                                         label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
-                                         data=data.frame(),
-                                         size=5,fontface='italic',hjust=0,colour="grey30")
-                                         #+ coord_fixed(ratio = 3) 
-    mm4 <- mm3 + geom_text(x=region_centers$cent_x, y=region_centers$cent_y, 
-                         label=region_centers$NAME, col="white")#+ scale_x_continuous(limits=c(-10,2)) 
-    print(mm4)
-    
+    mm2 <- mm1 + geom_text(aes(x=diffmap()$cent_x, y=diffmap()$cent_y, 
+                               label=diffmap()$NAME),
+                           data=data.frame(),
+                           col="black", size=5, family="Palatino",fontface="italic")
+    if(cluster()==0){
+      mm3 <- mm2 + theme_map() + scale_fill_gradient2("Percentage (%) excess of\nSecure households",
+                                                      high='#238443',low='#D7301F',mid='#FFFFBF',na.value = "black")
+     
+      final <- mm3
+    }
+    else{
+      mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
+                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,max(diffmap()$diffpercent)))
+      mm4 <- mm3 + geom_text(aes(x=-8,y=52,
+                                 label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
+                             data=data.frame(),
+                             size=5,fontface='italic',hjust=0.5,colour="grey30")
+      #+ coord_fixed(ratio = 3) 
+      mm5 <- mm4 + geom_text(aes(x=-8,y=54.5,
+                                 label=percentlabelSub()),
+                             colour=percentcolourSub(),
+                             data=data.frame(),size=7,alpha=0.9,hjust=0.5)
+      mm6 <- mm5 + geom_text(aes(x=-8,y=54,
+                                 label=paste0('is ',blurbmap()$percent,'% over-represented in the region of')),
+                             colour=percentcolourSub(),
+                             data=data.frame(),size=5,alpha=0.9,hjust=0.5)
+      mm7 <- mm6 + geom_text(aes(x=-8,y=53.5,
+                                 label=blurbmap()$region),
+                             colour=percentcolourSub(),
+                             data=data.frame(),size=10,alpha=0.9,hjust=0.5)
+      mm8 <- mm7 + geom_text(aes(x=-8,y=53,
+                                 label='compared to the survey population'),
+                             colour=percentcolourSub(),
+                             data=data.frame(),size=5,alpha=0.9,hjust=0.5)
+      final <- mm8
+    }
+    print(final)
   })
   
   ############

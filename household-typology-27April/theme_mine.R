@@ -1,11 +1,11 @@
-legendpos <- function(finance){
-  if(finance=="fihhyr_a")
-    x <- c(0.1,0.8)
-  else if(finance=="dfihhyr_a")
-    x <- c(0.15,0.8)
-  else
-    x <- c(0.15,0.8)
-}
+#legendpos <- function(finance){
+ # if(finance=="fihhyr_a")
+  #  x <- c(0.15,0.8)
+  #else if(finance=="dfihhyr_a")
+   # x <- c(0.21,0.78)
+  #else
+  #  x <- c(0.23,0.82)
+#}
  
 
 theme_mine <- function(base_size = 18, base_family = "Helvetica",finance) {
@@ -24,7 +24,7 @@ theme_mine <- function(base_size = 18, base_family = "Helvetica",finance) {
       #axis.text.x		= element_blank(),
       axis.text.y		= element_text(size = rel(0.8), colour="grey10", vjust=0.5, hjust=1),
       #axis.text.y		= element_blank(),
-      axis.title.x		= element_text(size= rel(0.8), colour="grey10"),
+      axis.title.x		= element_text(size= rel(0.8), colour="grey10", vjust=0),
       #axis.title.x		= element_blank(),
       #axis.title.y		= element_blank(),
       axis.title.y		= element_text(size= rel(0.8), colour="grey10", angle=90),
@@ -37,7 +37,7 @@ theme_mine <- function(base_size = 18, base_family = "Helvetica",finance) {
       legend.text		= element_text(size= rel(0.8)),
       legend.title		= element_text(size= rel(0.8), face="bold"),
       #legend.title		= element_blank(),
-      legend.position	= legendpos(finance),
+      legend.position	= "top",
       panel.background  = element_blank(),
       panel.border      = element_blank(),
       plot.background	= element_blank(),	

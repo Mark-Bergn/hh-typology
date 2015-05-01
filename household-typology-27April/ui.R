@@ -16,16 +16,16 @@ shinyUI(fluidPage(
   
   list(tags$head(HTML('<link rel="icon", href="bankofengland60.jpg", 
                                    type="image/jpg" />'))),
-  titlePanel("", windowTitle = "Household types in the Bank of England survey"),
+  titlePanel("", windowTitle = "Financial attitudes in UK households"),
   # Application title
   headerPanel(fluidRow(
     column(1,
            tags$h1(
-             tags$img(src="Bank_of_England.svg", width="90px")
+             tags$img(src="Bank_of_England.svg", width="70px")
            )
            ),
     column(11,
-           tags$h1("Financial attitudes of UK households: the Bank of England survey")
+           tags$h1("Financial attitudes in UK households: the Bank of England survey")
            )
   )
   ),
@@ -69,7 +69,7 @@ shinyUI(fluidPage(
                                             "Household types",
                                             tabPanel("All types", value=0, icon = icon("gears")),
                                             tabPanel("Highly secure", value=1, icon = icon("gear")),
-                                            tabPanel("Conservative and secure", value=2, icon = icon("gear")),
+                                            tabPanel("Cautiously secure", value=2, icon = icon("gear")),
                                             tabPanel("Struggling but managing", value=3, icon = icon("gear")),
                                             tabPanel("Falling behind", value=4, icon = icon("gear")),
                                             widths=c(12,12),
@@ -188,11 +188,16 @@ shinyUI(fluidPage(
                    #                            font-style:italic;line-height:150%;color:black;
                    #                            }"))
                     #        ),
-                 plotOutput("mdsplot", height="800px")#, #textOutput("clust")
-                 #textOutput("histo")
+                 plotOutput("mdsplot", height="700px"), #textOutput("clust")
+                 textOutput("mdstext"),
+                 tags$head(tags$style("#mdstext{color: black;
+                                 font-size: 15px;
+                                 font-style: italic;
+                                  line-height:120%;
+                                 }"))
                  ),
           column(5,
-                 plotOutput("attplot", height="1000px", width='95%'), tableOutput("summary") #textOutput("finance"),
+                 plotOutput("attplot", height="900px", width='95%'), tableOutput("summary") #textOutput("finance"),
           )
           ),
         value=1
@@ -209,6 +214,7 @@ shinyUI(fluidPage(
           column(5,
                  #helpText('Demographics'),
                  plotOutput("demplot", height=800, width = '95%')
+                 #tableOutput("table")
                  )
           ),           
         value=2
