@@ -14,7 +14,7 @@ s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
 placenames  <- c("East Anglia", "East Midlands",  "London", "North East",
                        "North West", "Scotland", "South East",
-                       "South West", "West Midlands", "Wales",  "Yorkshire & Humber")
+                       "South West", "Wales","West Midlands" ,"Yorkshire & Humber")
 
 #Read map and fortify
 load('map.rdata')

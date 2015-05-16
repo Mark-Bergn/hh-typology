@@ -213,7 +213,7 @@ quallabels <- c('None',
 
 #mdsexplain <- 'We used a technique called' 
 mdsexplain <- 'to group households together based on responses to survey questions. Each circle below represents a household. Circles placed closer together have similar answers to survey questions on financial attitude and outlook. The most informative questions are shown on the right panel.'
-mdsexplain2 <- "The household attitude can be compared with financial position, by comparing the Circles position and size. The financial scores are derived from the logged ratio of income to debt, this gives a comparison of the distribution of each household type\n"
+mdsexplain2 <- "We can assess household attitude against financial position by comparing the Circle's position and size. The financial scores are derived from the logged ratio of income to debt, which gives a comparison of the distribution between household types."
 
 demogexplain <- "Here we can investigate how the household types vary according to different demographics. The map shows which areas have a higher proportion of the selected household type compared to overall UK survey response."
 #mdstitle <- 'Using a technique called multidimensional scaling, households are measured how close they are to each other based on the similarity'
