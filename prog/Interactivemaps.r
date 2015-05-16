@@ -47,15 +47,16 @@ pal <- colorQuantile("YlGn", NULL, n = 3)
 
 # Create html code to show when a region is clicked
 infotip  <- paste0("Region: <b>", boe$NAME, "</b><br>",
-       boe$value)
+       boe$a09_2c1, "<br>", boe$placenames)
 
 cl <- pal(boe$value)
 vl <- boe$value
 
 
 leaflet(data= boe) %>% #tell where the data is
-  addPolygons(fillColor = ~pal(value), fillOpacity = 0.8, color = "#BDBDC3", 
-              weight = 1, popup = infotip) %>% # draw polygons with color fill 
+  addPolygons(fillColor = ~pal(boe$a09_2c1), fillOpacity = 0.8, color = "#BDBDC3", 
+              weight = 1, popup = infotip)
+    %>% # draw polygons with color fill 
   addLegend(position = "bottomleft", colors = ~cl, labels = ~vl) %>% # not working yet
   setView(-2, 55, zoom = 5) %>% #tell where to start the view
   addTiles() # have a background map. Might note be needed.
