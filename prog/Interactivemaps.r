@@ -1,14 +1,13 @@
 setwd('../household-typology-27April/')
-load('map.rdata')
+load('subpctmap.rdata')
 library(ggplot2)
 library(ggvis)
 library(dplyr)
 
-boe$id <- row.names(boe)
+boe$id <- row.names(subdat)
 
 #Create a value to represent the percentage
-boe$value <- c(1,15,20,15,20,15,1,7,15,20,20)
-boedf  <- fortify(boe)
+boedf  <- fortify(subdat)
 boedf  <- left_join(boedf, boe@data)
 
 
@@ -20,18 +19,18 @@ boedf  <- left_join(boedf, boe@data)
 region_tooltip <- function(x){
   row <- boedf[boedf$group==x$group,]  %>%
     select(NAME, value)  %>% unique
-  paste0("<b>", row[,"NAME"], "</b><br>",
-         row[,"value"])
+  paste0("<b>", row[,"labname"], "</b><br>",
+         row[,"a09_2c1"])
   } 
 
 
 boedf %>% # this is the data it is based on
   group_by(group, id) %>%  # for this one we group by these to get the regions
   ggvis(~long, ~lat) %>% # these are the same as the aes
-  layer_paths(fill = ~value, 
+  layer_paths(fill = ~a09_2c1, 
               strokeWidth:=0.5, stroke:="white") %>% #This give the polygons
   scale_numeric("fill", range=c("#bfd3e6", "#8c6bb1" ,"#4d004b")) %>% # choose the colour scales
-  #add_tooltip(region_tooltip, "hover") %>% #This gives the interactivity switch of for faster rendering
+  add_tooltip(region_tooltip, "hover") %>% #This gives the interactivity switch of for faster rendering
   hide_axis("x" ) %>% hide_axis("y") %>% 
   add_legend(scales = "fill", title = "Pecentage change in value",
              orient = "left") %>% 

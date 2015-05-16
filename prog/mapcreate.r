@@ -1,7 +1,10 @@
-
+setwd("../data")
 library(rgdal)
 library(sp)
 library(maptools)
+library(data.table)
+library(plyr)
+library(dplyr)
 
 #read in Shape file of English Regions
 regions  <- readOGR(dsn=".", layer="Regions")
@@ -67,23 +70,27 @@ gadmsw  <- makeUniform(gadmsw)
 #Now bind
 boe  <- spRbind(regwgs84, gadmsw)
 
-boe$NAME
+
+boe$labname <- revalue(boe$NAME, c("Greater London Authority" = "Greater London",
+                       "East of England" = "East Anglia"))
 
 #Make the NAME match with our BOE data, this is what will wil merge on
-levels(boe$NAME)  <- c("E Midlands", "E Anglia", "Greater London", 
-                       "North",	"North West", "South East",
-                       "South West",	"W Midlands",	
-                       "Yorks&Humber", "Scotland",  "Wales")
-
-#Add in a placenames file I want all the 
-boe$placenames  <- c("East Midlands", "East Anglia",  "London", 
-                     "North East", "North West", "South East",
-                 "South West", "West Midlands" ,
-                 "Yorkshire & Humber", "Scotland", "Wales")
+boe$NAME <- revalue(boe$NAME, c("East Midlands" = "E Midlands",
+                       "East of England" = "E Anglia",
+                       "Greater London Authority" = "Greater London", 
+                       "North East" = "North",
+                       "West Midlands" = "W Midlands",	
+                       "Yorkshire and The Humber" = "Yorks&Humber"))
+detach("package:plyr", unload=TRUE)
 
 
+save(boe, file="map.rdata")
 
-infotip  <- paste0("Region: <b>", boe$NAME, "</b><br>", boe$placenames)
+
+# for checking it's the correct region
+library(leaflet)
+infotip  <- paste0("Region: <b>", boe$NAME, " ", boe$labname)
+#leafletR"</b><br>", boe$placenames)
 
 leaflet(data= boe) %>% #tell where the data is
   addPolygons(color = "#BDBDC3", 
@@ -92,35 +99,47 @@ leaflet(data= boe) %>% #tell where the data is
 
 
 
-c("North East", )
-
-[1] "North"          "North West"     "Greater London" "W Midlands"    
-[5] "Yorks&Humber"   "South West"     "E Midlands"     "South East"    
-[9] "E Anglia"       "Scotland"       "Wales"
+#Next stage 
+#Load the map data get percentages for the difference and then save as a spatial 
+#and normal dataframe
 
 
-
-mapmaker <- function(name,data,cluster,year){
+mapmaker <- function(name,data,cluster,year, clust=2){
   data$newregion <- data[,name]
   #survey population percentages
   dat <- data.table(data)
   summarytot <- dat[,list('freq'=.N),by=list(newregion)]
   summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
-  #Show 2-cluster percentages as default for 'All types' selection
-  summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
-  summaryclust2$percent <- 0
-  for (i in unique(summaryclust2$clust2)){
-    summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
+  
+  if (clust==2){
+      #Show 2-cluster percentages as default for 'All types' selection
+      summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
+      summaryclust2$percent <- 0
+      for (i in unique(summaryclust2$clust2)){
+        summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
+      }
+      summaryclust2$poppercent <- sapply(summaryclust2$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+      summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
+      #cluster percentages
+      summary <- dat[,list('freq'=.N),by=list(newregion,clust2)]
+  } else if (clust==4){
+      #Show 2-cluster percentages as default for 'All types' selection
+      summaryclust4 <- dat[,list('freq'=.N),by=list(newregion,clust4)]
+      summaryclust4$percent <- 0
+      for (i in unique(summaryclust4$clust4)){
+        summaryclust4$percent[summaryclust4$clust4==i] <- summaryclust4$freq[summaryclust4$clust4==i]/sum(summaryclust4$freq[summaryclust4$clust4==i])*100
+      }
+      summaryclust4$poppercent <- sapply(summaryclust4$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+      summaryclust4$diffpercent <- summaryclust4$percent-summaryclust4$poppercent
+      #cluster percentages
+      summary <- dat[,list('freq'=.N),by=list(newregion,clust4)]  
+        
+        #add missing E Anglia in 2009 Falling behind
+        if(year=='2009' & cluster==4){ 
+            summary <- rbind(data.frame(summary),data.frame('newregion'='E Anglia','clust4'=4,'freq'=0))
+            summary$newregion <- as.factor(summary$newregion)
+        }   
   }
-  summaryclust2$poppercent <- sapply(summaryclust2$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
-  summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
-  #cluster percentages
-  summary <- dat[,list('freq'=.N),by=list(newregion,clust2)]
-  #add missing E Anglia in 2009 Falling behind
-  if(year=='2009' & cluster==4){ 
-    summary <- rbind(data.frame(summary),data.frame('newregion'='E Anglia','clust'=4,'freq'=0))
-    summary$newregion <- as.factor(summary$newregion)
-  }   
   summary$percent <- 0
   for (i in unique(summary$clust)){
     summary$percent[summary$clust==i] <- summary$freq[summary$clust==i]/sum(summary$freq[summary$clust==i])*100
@@ -138,8 +157,7 @@ mapmaker <- function(name,data,cluster,year){
 }
 
 
-vars <- c(rep"09_2c1", "09_2c2", "09_4c1" )
-
+# create the var names
 v09 <- paste0(rep("09", 2), "_", rep(2,2),"c",1:2)
 v10 <- paste0(rep("10", 2), "_", rep(2,2),"c",1:2)
 v11 <- paste0(rep("11", 2), "_", rep(2,2),"c",1:2)
@@ -148,24 +166,39 @@ v114 <- paste0(rep("11", 4), "_", rep(4,2),"c",1:4)
 
 var <- c(v09, v10, v11, v094, v114)
 
+
+
+load("map.rdata")
+boe$NAME <- as.character(boe$NAME)
+s2009 <- read.csv("../household-typology-27April/s09.csv")
+s2010 <- read.csv("../household-typology-27April/s10.csv")
+s2011 <- read.csv("../household-typology-27April/s11.csv")
+
+
+s2009$region <- as.character(s2009$region)
+s2010$region <- as.character(s2010$region)
+s2011$region <- as.character(s2011$region)
 # Assign the percent diff to the data, this will need to be changed so we merge 
 # on the percent diffs
-var
 for (i in 1:length(var)){
   #get the year
   tempy <- paste0("20", substring(paste0(var[i]), 1, 2))
   # get the dataframe name
   tempdat <-  paste0("s",tempy)
   # create the dataset
-  cl <- substring(paste0(var[i]), 6,6)
-  temp <-  data.frame(mapmaker("region", data= eval(parse(text=tempdat)), cl, year ))
+  cl <- as.numeric(substring(paste0(var[i]), 6,6))
+  c24 <- as.numeric(substring(paste0(var[i]), 4, 4))
+  
+  temp <-  data.frame(mapmaker("region", 
+                               data= eval(parse(text=tempdat)), cl, year= tempy,
+                               clust = c24))
   # assign the variable I want
   temp1 <- temp %>% select(NAME)
-  temp1[[paste0(var[i])]] <- temp$diffpercent 
+  # Include an a because variables can't start with numbers
+  temp1[[paste0("a",var[i])]] <- temp$diffpercent 
   boe@data <- left_join(boe@data, temp1)
 }
-
-
+te <- mapmaker("region", s2009, 4, "2009", clust=4)
 
 
 
@@ -173,14 +206,17 @@ for (i in 1:length(var)){
 # save the data slot
 subdat_data<-boe@data
 
+row.names(subdat_data) <- row.names(subdat)
+
 # Simplify 
-subdat<-gSimplify(boe,tol=0.001, topologyPreserve=TRUE)
+subdat<-rgeos::gSimplify(boe,tol=0.001, topologyPreserve=TRUE)
 
 #to write to geojson we need a SpatialPolygonsDataFrame
 subdat<-SpatialPolygonsDataFrame(subdat, data=subdat_data)
 
-boe  <- subdat
 
-save(boe, file="../household-typology-27April/map.rdata")
+
+save(subdat, file="./subpctmap.rdata")
+save(boe, file="./pctmap.rdata")
 
 
