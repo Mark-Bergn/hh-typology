@@ -111,10 +111,10 @@ mapmaker <- function(name,data,cluster,year, clust=2){
   summarytot <- dat[,list('freq'=.N),by=list(newregion)]
   summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
   
-  if (clust==2){
-      #Show 2-cluster percentages as default for 'All types' selection
+  if (clust==2 | cluster==0){
       summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
       summaryclust2$percent <- 0
+      #Show 2-cluster percentages as default for 'All types' selection
       for (i in unique(summaryclust2$clust2)){
         summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
       }
@@ -158,17 +158,19 @@ mapmaker <- function(name,data,cluster,year, clust=2){
 
 
 # create the var names
-v09 <- paste0(rep("09", 2), "_", rep(2,2),"c",1:2)
-v10 <- paste0(rep("10", 2), "_", rep(2,2),"c",1:2)
-v11 <- paste0(rep("11", 2), "_", rep(2,2),"c",1:2)
-v094 <- paste0(rep("09", 4), "_", rep(4,2),"c",1:4)
-v114 <- paste0(rep("11", 4), "_", rep(4,2),"c",1:4)
+v09 <- paste0(rep("09", 2), "_", rep(2,2),"c",0:2)
+v10 <- paste0(rep("10", 2), "_", rep(2,2),"c",0:2)
+v11 <- paste0(rep("11", 2), "_", rep(2,2),"c",0:2)
+v094 <- paste0(rep("09", 4), "_", rep(4,2),"c",0:4)
+v104 <- paste0("10_4c0")
+v114 <- paste0(rep("11", 4), "_", rep(4,2),"c",0:4)
 
-var <- c(v09, v10, v11, v094, v114)
+var <- c(v09, v10, v11, v094,v104, v114)
 
 
 
 load("map.rdata")
+boe <- subda
 boe$NAME <- as.character(boe$NAME)
 s2009 <- read.csv("../household-typology-27April/s09.csv")
 s2010 <- read.csv("../household-typology-27April/s10.csv")
@@ -198,7 +200,7 @@ for (i in 1:length(var)){
   temp1[[paste0("a",var[i])]] <- temp$diffpercent 
   boe@data <- left_join(boe@data, temp1)
 }
-te <- mapmaker("region", s2009, 4, "2009", clust=4)
+te <- mapmaker("region", s2009, 0, "2009", clust=2)
 
 
 
@@ -206,17 +208,43 @@ te <- mapmaker("region", s2009, 4, "2009", clust=4)
 # save the data slot
 subdat_data<-boe@data
 
-row.names(subdat_data) <- row.names(subdat)
 
 # Simplify 
-subdat<-rgeos::gSimplify(boe,tol=0.001, topologyPreserve=TRUE)
-
+subdat<-rgeos::gSimplify(boe,tol=0.01, topologyPreserve=TRUE)
+plot(boe)
+row.names(subdat_data) <- row.names(subdat)
 #to write to geojson we need a SpatialPolygonsDataFrame
 subdat<-SpatialPolygonsDataFrame(subdat, data=subdat_data)
 
 
 
+### Clip the shapefile
+
 save(subdat, file="./subpctmap.rdata")
 save(boe, file="./pctmap.rdata")
+library(rgdal)
+library(spatstat)
+library(rgeos)
+plot(boe, add=T)
+poly1 <- clickpoly(add=T)
+
+coords <- poly1[[4]]
+
+cc <- data.frame(x = coords[[1]]$x, y=coords[[1]]$y)
+cc <- as.matrix(cc, ncol = 2)
 
 
+polysp <- Polygon(coords = cc)
+polysps <- Polygons(list(polysp), ID = "a")
+
+poly2 <- SpatialPolygons(list(polysps), proj4string = CRS(proj4string(boe)))
+
+p
+
+subda <-   gIntersection(boe, poly2, byid = T)
+
+plot(subda)
+
+subda <- bbox(boe)
+
+save(subda, file = "./subda.rdata")

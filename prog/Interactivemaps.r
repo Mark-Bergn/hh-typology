@@ -10,18 +10,30 @@ boe$id <- row.names(subdat)
 boedf  <- fortify(subdat)
 boedf  <- left_join(boedf, boe@data)
 
+#Read map and fortify
+#load('pctmap.rdata')
+load('subpctmap.rdata')
+boe <- subdat
+boe$id <- row.names(subdat)
+
+#Create a value to represent the percentage
+boedf  <- fortify(subdat)
+boedf  <- left_join(boedf, boe@data)
+
+
 
 
 
 ####GGVIS PLOT
 
 #Code for reactivity when hoovering
+#Code for reactivity when hoovering
 region_tooltip <- function(x){
   row <- boedf[boedf$group==x$group,]  %>%
-    select(NAME, value)  %>% unique
+    select(group, labname, a09_2c1)  %>% unique
   paste0("<b>", row[,"labname"], "</b><br>",
          row[,"a09_2c1"])
-  } 
+} 
 
 
 boedf %>% # this is the data it is based on
@@ -34,7 +46,8 @@ boedf %>% # this is the data it is based on
   hide_axis("x" ) %>% hide_axis("y") %>% 
   add_legend(scales = "fill", title = "Pecentage change in value",
              orient = "left") %>% 
-  layer_text(x = -2, y = 55, text := "hello", fontSize := 50) # add in text
+  layer_text(x = -2, y = 55, text := "hello", fontSize := 50) %>%  # add in text
+  bind_shiny("ggmap")
 
 
 
@@ -59,4 +72,17 @@ leaflet(data= boe) %>% #tell where the data is
   addLegend(position = "bottomleft", colors = ~cl, labels = ~vl) %>% # not working yet
   setView(-2, 55, zoom = 5) %>% #tell where to start the view
   addTiles() # have a background map. Might note be needed.
+
+#   # Find colour quantiles
+#   pal <- colorQuantile("YlGn", NULL, n = 3)
+#   # Create html code to show when a region is clicked
+# #   infotip  <- paste0("Region: <b>", boe$labname, "</b><br>",
+# #                      boe$a09_2c1)
+# 
+#     map1 <- leaflet() %>% addTiles()
+# #     leaflet(data= boe) %>% #tell where the data is
+# #     addPolygons(fillColor = ~pal(boe$a09_2c1), fillOpacity = 0.8, color = "#BDBDC3", 
+# #                 weight = 1, popup = infotip) %>% 
+# #     addTiles()
+# output$leafmap <- renderLeaflet(map1)
 
