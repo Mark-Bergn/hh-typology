@@ -2,9 +2,9 @@ theme_histogram <- function(base_size = 18, base_family = "Helvetica") {
   # Starts with theme_grey and then modify some parts
   theme_grey(base_size = base_size, base_family = base_family) %+replace%
     theme(
-      axis.line   	= element_line(size=0.5, colour="grey70"),
+      axis.line   	= element_line(size=0.5, colour="grey50"),
       #axis.line 		= element_blank(),
-      axis.line.x		= element_line(size=0.5, colour="grey70"),
+      axis.line.x		= element_line(size=0.5, colour="grey50"),
       axis.line.y		= element_blank(),
       plot.title		= element_text(size = rel(0.8), colour="grey50", face=c("bold.italic"), hjust=0),
       #strip.text.x 		= element_text(size=18, colour="black", face= "bold"),
