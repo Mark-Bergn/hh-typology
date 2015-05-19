@@ -1,4 +1,6 @@
 library(shiny)
+library(leaflet)
+library(ggvis)
 
 #https://github.com/wch/testapp/blob/master/custom-style/ui.R
 widget_style <-
@@ -205,7 +207,9 @@ shinyUI(fluidPage(theme = "boottheme.css",
         fluidRow(
           column(7,
                  helpText(tags$h4(demogexplain, style="line-height:150%;color:black;")),
-                 plotOutput("mapplot", height=600, width = '90%')
+                 #leafletOutput("leafmap")
+                 ggvisOutput("ggmap")                 
+#                  plotOutput("mapplot", height=600, width = '90%')
                  #tableOutput("table")
           ),
           column(5,

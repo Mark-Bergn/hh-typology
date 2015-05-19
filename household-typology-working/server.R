@@ -5,6 +5,9 @@ library(RColorBrewer)
 library(sp)
 library(gpclib)
 library(maptools)
+library(leaflet)
+library(ggvis)
+library(dplyr)
 gpclibPermit()
 
 #Read data
@@ -12,14 +15,17 @@ s2009 <- read.csv('s09.csv' , fileEncoding='latin1')
 s2010 <- read.csv('s10.csv' , fileEncoding='latin1')
 s2011 <- read.csv('s11.csv' , fileEncoding='latin1')
 
-placenames  <- c("East Anglia", "East Midlands",  "London", "North East",
-                       "North West", "Scotland", "South East",
-                       "South West", "Wales","West Midlands" ,"Yorkshire & Humber")
+ boedf  <- read.csv('boedf.csv', fileEncoding='latin1')
+# load('pctmap.rdata')
 
-#Read map and fortify
-load('map.rdata')
-boe <- fortify(boe, region='NAME')
-load('mapcenters.rdata')
+# placenames  <- c("East Anglia", "East Midlands",  "London", "North East",
+#                        "North West", "Scotland", "South East",
+#                        "South West", "Wales","West Midlands" ,"Yorkshire & Humber")
+
+# #Read map and fortify
+# load('map.rdata')
+# boe <- fortify(boe, region='NAME')
+# load('mapcenters.rdata')
 ##these can be removed and done outside of the server
 # region_centers$cent_y[region_centers$NAME=="North West"]  <- 54.5
 # region_centers$cent_x[region_centers$NAME=="North West"]  <- -2.8
@@ -55,6 +61,48 @@ allvar  <- c(allvar, "age", "age_grp", "sex", "gor", "mastat", "hhsize", "nkids"
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output) {
+  
+  
+#   
+#   # Find colour quantiles
+#   pal <- colorQuantile("YlGn", NULL, n = 3)
+#   
+#   # Create html code to show when a region is clicked
+#   infotip  <- paste0("Region: <b>", boe$labnames, "</b><br>",
+#                      boe$a09_2c1)
+#   
+#   
+#   
+# lmap  <-   leaflet(data= boe) %>% #tell where the data is
+#     addPolygons(fillColor = ~pal(boe$a09_2c1), fillOpacity = 0.8, color = "#BDBDC3", 
+#                 weight = 1, popup = infotip) %>% # draw polygons with color fill 
+#     setView(-2, 55, zoom = 5) %>% #tell where to start the view
+#     addTiles() # have a background map. Might note be needed.
+# 
+# output$leafmap  <- renderLeaflet(lmap)
+#   
+  
+  region_tooltip <- function(x){
+    row <- boedf[boedf$group==x$group,]  %>%
+      select(group, labname, a09_2c1)  %>% unique
+    paste0("<b>", row[,"labname"], "</b><br>",
+           row[,"a09_2c1"])
+  } 
+  
+  
+  boedf %>% # this is the data it is based on
+    group_by(group, id) %>%  # for this one we group by these to get the regions
+    ggvis(~long, ~lat) %>% # these are the same as the aes
+    layer_paths(fill = ~a09_2c1, 
+                strokeWidth:=0.5, stroke:="white") %>% #This give the polygons
+    scale_numeric("fill", range=c("#bfd3e6", "#8c6bb1" ,"#4d004b")) %>% # choose the colour scales
+    add_tooltip(region_tooltip, "hover") %>% #This gives the interactivity switch of for faster rendering
+    hide_axis("x" ) %>% hide_axis("y") %>% 
+    add_legend(scales = "fill", title = "Pecentage change in value",
+               orient = "left") %>% 
+    layer_text(x = -2, y = 55, text := "hello", fontSize := 50) %>%  # add in text
+    bind_shiny("ggmap")
+#   
   
   #get data according to year
   dat <- reactive({
@@ -570,116 +618,116 @@ shinyServer(function(input, output) {
   #########Plot Map##########
   ###########################
   
-  mapmaker <- function(name,data,cluster,year,centroids){
-    data$newregion <- data[,name]
-    #survey population percentages
-    dat <- data.table(data)
-    summarytot <- dat[,list('freq'=.N),by=list(newregion)]
-    summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
-    #Show 2-cluster percentages as default for 'All types' selection
-    summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
-    summaryclust2$percent <- 0
-    for (i in unique(summaryclust2$clust2)){
-      summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
-    }
-    summaryclust2$poppercent <- sapply(summaryclust2$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
-    summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
-    #cluster percentages
-    summary <- dat[,list('freq'=.N),by=list(newregion,clust)]
-    #add missing E Anglia in 2009 Falling behind
-    if(year=='2009' & cluster==4){ 
-      summary <- rbind(data.frame(summary),data.frame('newregion'='E Anglia','clust'=4,'freq'=0))
-      summary$newregion <- as.factor(summary$newregion)
-    }   
-    summary$percent <- 0
-    for (i in unique(summary$clust)){
-      summary$percent[summary$clust==i] <- summary$freq[summary$clust==i]/sum(summary$freq[summary$clust==i])*100
-    }
-    summary$poppercent <- sapply(summary$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
-    summary$diffpercent <- summary$percent-summary$poppercent
-    if(cluster==0)
-      x <- summaryclust2[summaryclust2$clust2==1,]
-    else
-      x <- summary[summary$clust==cluster,]
-    # merge with centroids data to check
-    x$NAME <- x$newregion
-    x <- merge(x,centroids,by ='NAME')
-    return(x)
-  }
-  
-  diffmap <- reactive({
-    x <- mapmaker('region',dataSubClust2(),cluster(),input$year,region_centers)
-  })
-  
-  #get maximum diffpercent and region for blurb
-  
-  blurbmaker <- function(data){
-    x <- list()
-    x$percent <- round(max(data$diffpercent),1)
-    x$region <- as.character(data[data$diffpercent==max(data$diffpercent),]$NAME)
-    return(x)
-  }
-  
-  blurbmap <-reactive({
-    x <- blurbmaker(diffmap())
-  })
-  
-  #check table
-  output$table <- renderTable({
-    y <- diffmap()
-  })
-  mapcolorSub <- reactive({
-    x <- mapcolorshigh[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
-  })
-  
-  source('theme_map.R')
-  output$mapplot  <- renderPlot({
-    mm <- ggplot(data=diffmap(), environment=environment()) 
-    mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
-    mm2 <- mm1 + geom_text(aes(x=diffmap()$cent_x, y=diffmap()$cent_y, 
-                               label=placenames),
-                           data=data.frame(),
-                           col="black", size=5)#family="Palatino",fontface="italic")
-    if(cluster()==0){
-      mm3 <- mm2 + theme_map() + scale_fill_gradient2("Percentage (%) excess of\nSecure households",
-                                                      high='#238443',low='#D7301F',mid='#FFFFBF',limits=c(-2.5,2.5))
-     
-      final <- mm3
-    }
-    else{
-      if(cluster()==4 & input$year=='2009')
-        mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
-                                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,13))#max(diffmap()$diffpercent)))
-      else
-        mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
-                                                       high=mapcolorSub(),low='#FFFFBF',limits=c(0,6.5))
-      
-      mm4 <- mm3 + geom_text(aes(x=-8,y=52,
-                                 label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
-                             data=data.frame(),
-                             size=5,fontface='italic',hjust=0.5,colour="grey30")
-      #+ coord_fixed(ratio = 3) 
-      mm5 <- mm4 + geom_text(aes(x=-8,y=54.5,
-                                 label=percentlabelSub()),
-                             colour=percentcolourSub(),
-                             data=data.frame(),size=7,alpha=0.9,hjust=0.5)
-      mm6 <- mm5 + geom_text(aes(x=-8,y=54,
-                                 label=paste0('is ',blurbmap()$percent,'% over-represented in the region of')),
-                             colour=percentcolourSub(),
-                             data=data.frame(),size=5,alpha=0.9,hjust=0.5)
-      mm7 <- mm6 + geom_text(aes(x=-8,y=53.5,
-                                 label=blurbmap()$region),
-                             colour=percentcolourSub(),
-                             data=data.frame(),size=10,alpha=0.9,hjust=0.5)
-      mm8 <- mm7 + geom_text(aes(x=-8,y=53,
-                                 label='compared to the survey population'),
-                             colour=percentcolourSub(),
-                             data=data.frame(),size=5,alpha=0.9,hjust=0.5)
-      final <- mm8
-    }
-    print(final)
-  })
-  
+#   mapmaker <- function(name,data,cluster,year,centroids){
+#     data$newregion <- data[,name]
+#     #survey population percentages
+#     dat <- data.table(data)
+#     summarytot <- dat[,list('freq'=.N),by=list(newregion)]
+#     summarytot$percent <- summarytot$freq/sum(summarytot$freq)*100
+#     #Show 2-cluster percentages as default for 'All types' selection
+#     summaryclust2 <- dat[,list('freq'=.N),by=list(newregion,clust2)]
+#     summaryclust2$percent <- 0
+#     for (i in unique(summaryclust2$clust2)){
+#       summaryclust2$percent[summaryclust2$clust2==i] <- summaryclust2$freq[summaryclust2$clust2==i]/sum(summaryclust2$freq[summaryclust2$clust2==i])*100
+#     }
+#     summaryclust2$poppercent <- sapply(summaryclust2$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+#     summaryclust2$diffpercent <- summaryclust2$percent-summaryclust2$poppercent
+#     #cluster percentages
+#     summary <- dat[,list('freq'=.N),by=list(newregion,clust)]
+#     #add missing E Anglia in 2009 Falling behind
+#     if(year=='2009' & cluster==4){ 
+#       summary <- rbind(data.frame(summary),data.frame('newregion'='E Anglia','clust'=4,'freq'=0))
+#       summary$newregion <- as.factor(summary$newregion)
+#     }   
+#     summary$percent <- 0
+#     for (i in unique(summary$clust)){
+#       summary$percent[summary$clust==i] <- summary$freq[summary$clust==i]/sum(summary$freq[summary$clust==i])*100
+#     }
+#     summary$poppercent <- sapply(summary$newregion,function(x){y <- summarytot[summarytot$newregion==x,]$percent})
+#     summary$diffpercent <- summary$percent-summary$poppercent
+#     if(cluster==0)
+#       x <- summaryclust2[summaryclust2$clust2==1,]
+#     else
+#       x <- summary[summary$clust==cluster,]
+#     # merge with centroids data to check
+#     x$NAME <- x$newregion
+#     x <- merge(x,centroids,by ='NAME')
+#     return(x)
+#   }
+#   
+#   diffmap <- reactive({
+#     x <- mapmaker('region',dataSubClust2(),cluster(),input$year,region_centers)
+#   })
+#   
+#   #get maximum diffpercent and region for blurb
+#   
+#   blurbmaker <- function(data){
+#     x <- list()
+#     x$percent <- round(max(data$diffpercent),1)
+#     x$region <- as.character(data[data$diffpercent==max(data$diffpercent),]$NAME)
+#     return(x)
+#   }
+#   
+#   blurbmap <-reactive({
+#     x <- blurbmaker(diffmap())
+#   })
+#   
+#   #check table
+#   output$table <- renderTable({
+#     y <- diffmap()
+#   })
+#   mapcolorSub <- reactive({
+#     x <- mapcolorshigh[[dict[dict$Year==input$year & dict$Level==input$clustnum & dict$Value==cluster(),]$id]]
+#   })
+#   
+#   source('theme_map.R')
+#   output$mapplot  <- renderPlot({
+#     mm <- ggplot(data=diffmap(), environment=environment()) 
+#     mm1 <- mm + geom_map(aes(map_id=diffmap()$newregion,fill=diffmap()$diffpercent),map=boe) + expand_limits(x = boe$long, y = boe$lat)
+#     mm2 <- mm1 + geom_text(aes(x=diffmap()$cent_x, y=diffmap()$cent_y, 
+#                                label=placenames),
+#                            data=data.frame(),
+#                            col="black", size=5)#family="Palatino",fontface="italic")
+#     if(cluster()==0){
+#       mm3 <- mm2 + theme_map() + scale_fill_gradient2("Percentage (%) excess of\nSecure households",
+#                                                       high='#238443',low='#D7301F',mid='#FFFFBF',limits=c(-2.5,2.5))
+#      
+#       final <- mm3
+#     }
+#     else{
+#       if(cluster()==4 & input$year=='2009')
+#         mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
+#                                                        high=mapcolorSub(),low='#FFFFBF',limits=c(0,13))#max(diffmap()$diffpercent)))
+#       else
+#         mm3 <- mm2 + theme_map() + scale_fill_gradient(name="Percentage (%) excess",
+#                                                        high=mapcolorSub(),low='#FFFFBF',limits=c(0,6.5))
+#       
+#       mm4 <- mm3 + geom_text(aes(x=-8,y=52,
+#                                  label="Darkened areas correspond\nto a negative (less than 0%)\ndifference"),
+#                              data=data.frame(),
+#                              size=5,fontface='italic',hjust=0.5,colour="grey30")
+#       #+ coord_fixed(ratio = 3) 
+#       mm5 <- mm4 + geom_text(aes(x=-8,y=54.5,
+#                                  label=percentlabelSub()),
+#                              colour=percentcolourSub(),
+#                              data=data.frame(),size=7,alpha=0.9,hjust=0.5)
+#       mm6 <- mm5 + geom_text(aes(x=-8,y=54,
+#                                  label=paste0('is ',blurbmap()$percent,'% over-represented in the region of')),
+#                              colour=percentcolourSub(),
+#                              data=data.frame(),size=5,alpha=0.9,hjust=0.5)
+#       mm7 <- mm6 + geom_text(aes(x=-8,y=53.5,
+#                                  label=blurbmap()$region),
+#                              colour=percentcolourSub(),
+#                              data=data.frame(),size=10,alpha=0.9,hjust=0.5)
+#       mm8 <- mm7 + geom_text(aes(x=-8,y=53,
+#                                  label='compared to the survey population'),
+#                              colour=percentcolourSub(),
+#                              data=data.frame(),size=5,alpha=0.9,hjust=0.5)
+#       final <- mm8
+#     }
+#     print(final)
+#   })
+#   
   ############
   #BAR CHARTS
   ############

@@ -3,12 +3,15 @@ load('subpctmap.rdata')
 library(ggplot2)
 library(ggvis)
 library(dplyr)
-
+boe  <- subdat
 boe$id <- row.names(subdat)
 
 #Create a value to represent the percentage
 boedf  <- fortify(subdat)
 boedf  <- left_join(boedf, boe@data)
+
+load("../household-typology-working/boedf.r")
+write.csv(boedf, file="../household-typology-working/boedf.csv")
 
 #Read map and fortify
 #load('pctmap.rdata')
